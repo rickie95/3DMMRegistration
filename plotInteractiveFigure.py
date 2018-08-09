@@ -56,5 +56,5 @@ class PlotInteractiveFigure(PlotFigure):
         pyplot.ylim(-100, 100)
         pyplot.show()
 
-s = PlotInteractiveFigure()
-s.drawData()
+#s = PlotInteractiveFigure()
+#s.drawData()
