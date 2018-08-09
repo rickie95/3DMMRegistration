@@ -107,6 +107,3 @@ def loadFile(path):
         return None
 
     return file
-
-pp = loadBND("F0001_NE00WH_F3D.bnd")
-print("done")
