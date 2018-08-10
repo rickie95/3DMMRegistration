@@ -1,8 +1,6 @@
 from plotFigure import PlotFigure
 from scipy import spatial
-from model import Model
 import numpy as np
-
 
 
 class PlotInteractiveFigure(PlotFigure):
@@ -10,8 +8,8 @@ class PlotInteractiveFigure(PlotFigure):
             avg_model_data: Nx3 array for 3D point of model
             landmarks_3D: 68x3 array for 3D points of model's landmarks
     """
-    def __init__(self, model=None, landmarks=True):
-        super().__init__(model, landmarks)
+    def __init__(self,parent, model=None, landmarks=True, title=None):
+        super().__init__(parent, model, landmarks, title)
         # Attach event listeners
         self.fig.canvas.mpl_connect('button_press_event', self.onclick)
         # self.fig.canvas.mpl_connect('button_release_event', self.ReleaseClick)
@@ -45,6 +43,3 @@ class PlotInteractiveFigure(PlotFigure):
 
     def loadLandmarks(self):
         self.ax.scatter(self.model.landmarks_3D[:, 0], self.model.landmarks_3D[:, 1], c=self.landmarks_colors)
-
-#s = PlotInteractiveFigure(Model("F0001_NE00WH_F3D.wrl", "F0001_NE00WH_FD3.bnd"))
-#s.drawData()
