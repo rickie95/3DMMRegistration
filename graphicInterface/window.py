@@ -1,4 +1,3 @@
-from PyQt5.QtWidgets import (QDesktopWidget, QMainWindow)
 from graphicInterface.mainWidget import *
 
 
@@ -22,3 +21,9 @@ class Window(QMainWindow):
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
+
+    def setStatus(self, message):
+        self.statusBar().showMessage(message)
+
+    def setStatusReady(self):
+        self.statusBar().showMessage("Ready.")

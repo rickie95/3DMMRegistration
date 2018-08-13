@@ -1,5 +1,5 @@
 import numpy as np
-import file3DLoader
+from pointRegistration import file3DLoader
 import h5py
 
 

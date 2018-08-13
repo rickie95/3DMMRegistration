@@ -1,5 +1,3 @@
-from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QComboBox, QPushButton, QAction, QFileDialog, QGroupBox
-from PyQt5.QtCore import pyqtSlot
 from PyQt5.Qt import *
 
 
@@ -7,25 +5,32 @@ class UpperToolbar(QWidget):
 
     def __init__(self, parent):
         super().__init__(parent)
-        #bc1 = bigCell(self, QLabel("Metodo di registrazione:"), registrationMethodsCombobox())
-        #bc2 = bigCell(self, QLabel("Carica modello:"), LoadModelButton("Scegli.."))
         self.layout = QGridLayout()
         self.setLayout(self.layout)
-
+        #  Gruppo REGISTRAZIONE
         group1 = QGroupBox("Registrazione")
         layoutGB1 = QGridLayout()
         group1.setLayout(layoutGB1)
         label = QLabel("Metodo di registrazione:")
         label.setAlignment(Qt.AlignCenter)
         layoutGB1.addWidget(label, 0, 0)
-        layoutGB1.addWidget(registrationMethodsCombobox(), 0, 1)
-        layoutGB1.addWidget(AlignButton("Registra"), 1, 1)
 
+        self.registComboBox = RegistrationMethodsCombobox()
+        layoutGB1.addWidget(self.registComboBox, 0, 1)
+
+        registBTN = QPushButton("Registra")
+        registBTN.clicked.connect(self.registrate)
+        layoutGB1.addWidget(registBTN, 1, 1)
+
+
+        #  Gruppo MODELLO
         group2 = QGroupBox("Modello")
         layoutGB2 = QGridLayout()
         group2.setLayout(layoutGB2)
         layoutGB2.addWidget(LoadModelButton("Carica.."), 0, 0)
-        layoutGB2.addWidget(LoadModelButton("Ripristina"), 1, 0)
+
+        restoreBTN = QPushButton("Ripristina")
+        layoutGB2.addWidget(restoreBTN, 1, 0)
 
         self.layout.addWidget(group1, 0, 0)
         self.layout.addWidget(group2, 0, 1)
@@ -34,29 +39,18 @@ class UpperToolbar(QWidget):
         self.layout.setColumnStretch(1, 1)
         self.layout.setColumnStretch(2, 3)
 
+    def registrate(self):
+        method = self.registComboBox.currentText()
+        self.parent().registrate(method)
 
-class bigCell(QWidget):
 
-    def __init__(self, parent, w1, w2):
-        super().__init__(parent)
-        self.initUI(w1, w2)
-
-    def initUI(self, w1, w2):
-        self.layout = QGridLayout()
-        self.setLayout(self.layout)
-        self.layout.setColumnStretch(0,3)
-        self.layout.setColumnStretch(1,2)
-        self.layout.setColumnStretch(2,2)
-        self.layout.setColumnStretch(3,3)
-        self.layout.addWidget(w1, 0, 1)
-        self.layout.addWidget(w2, 0, 2)
-
-class registrationMethodsCombobox(QComboBox):
+class RegistrationMethodsCombobox(QComboBox):
 
     def __init__(self):
-        super(registrationMethodsCombobox, self).__init__()
-        methods = ["ICP", "CPD"]
-        self.addItems(methods)
+        super(RegistrationMethodsCombobox, self).__init__()
+        self.addItem("ICP", 1)
+        self.addItem("CPD", 2)
+
 
 class LoadModelButton(QPushButton):
 
@@ -74,7 +68,4 @@ class LoadModelButton(QPushButton):
         if fileName:
             print(fileName)
 
-class AlignButton(QPushButton):
 
-    def __init__(self, arg):
-        super(AlignButton, self).__init__(arg)

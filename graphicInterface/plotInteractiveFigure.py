@@ -1,4 +1,4 @@
-from plotFigure import PlotFigure
+from graphicInterface.plotFigure import PlotFigure
 from scipy import spatial
 import numpy as np
 

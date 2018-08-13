@@ -1,7 +1,6 @@
-from PyQt5.QtWidgets import (QWidget, QGridLayout, QLabel, QComboBox)
-from plotFigure import PlotFigure
-from plotInteractiveFigure import PlotInteractiveFigure
-from model import Model
+from graphicInterface.plotFigure import PlotFigure
+from graphicInterface.plotInteractiveFigure import PlotInteractiveFigure
+from pointRegistration.model import Model
 from graphicInterface.upperToolbar import *
 
 
@@ -22,3 +21,14 @@ class MainWidget(QWidget):
         dx_widget.drawData()
         grid_central.addWidget(UpperToolbar(self), 0, 0, 1, 4 )
         # Contenitore per i controlli
+
+    def registrate(self, method):
+        print("registration with "+method)
+        self.parent().setStatus("Busy...")
+        #  effettua la registrazione su thread separato
+
+    def registrateCallback(self, model):
+        print("eila'")
+        #  carica il template deformato
+        #  caricalo sul plotFigure widget
+        self.parent().setStatusReady()

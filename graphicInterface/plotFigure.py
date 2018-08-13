@@ -2,7 +2,6 @@ from matplotlib import pyplot
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5.QtWidgets import QSizePolicy
-from model import Model
 
 
 class PlotFigure(FigureCanvas):
