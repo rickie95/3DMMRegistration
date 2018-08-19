@@ -1,4 +1,4 @@
-import open3d
+import
 import numpy as np
 import copy
 from pointRegistration.model import Model
@@ -22,4 +22,4 @@ def draw_registration_result(source, target, transformation):
 
 mmm = Model("avgModel_bh_1779_NE.mat")
 mmn = Model("M0001_NE00AM_F3D.wrl", "M0001_NE00AM_F3D.bnd", "M0001_NE00AM_F2D.png")
-ICPregistration(mmm, mmn)
+ICPregistration(mmm.model_data, mmn.model_data)

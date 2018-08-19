@@ -27,3 +27,6 @@ class Window(QMainWindow):
 
     def setStatusReady(self):
         self.statusBar().showMessage("Ready.")
+
+    def notify(self, message):
+        self.statusBar().showMessage("Ready. \t " + message)

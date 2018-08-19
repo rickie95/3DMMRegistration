@@ -1,6 +1,7 @@
 import numpy as np
 from pointRegistration import file3DLoader
 import h5py
+from pathlib import Path
 
 
 class Model:
@@ -21,7 +22,9 @@ class Model:
             self.model_data = file3DLoader.loadWRML(path_data)
             self.landmarks_3D = file3DLoader.loadBND(path_landmarks)
 
-        self.bgImage = image
+        self.bgImage = None
+        if image is not None and Path(image).is_file():
+            self.bgImage = image
 
         # finally center data in (0, 0)
         self.centerData()
