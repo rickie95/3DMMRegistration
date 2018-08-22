@@ -22,9 +22,7 @@ class PlotFigure(FigureCanvas):
 
         if model is not None:
             self.loadModel(model)
-        #self.drawData()
 
-#TODO: ci sono due impelementazioni di set Model
     def loadModel(self, model):
         self.model = model
         self.bgImage = self.model.bgImage
@@ -58,9 +56,9 @@ class PlotFigure(FigureCanvas):
                 self.ax.imshow(img, extent=[-b*1.05, b*1.03, -b*1.03, b*1.05])
         self.draw()
 
-    def setModel(self, model):
-        self.model = model
-        self.bgImage = self.model.bgImage
+    #def setModel(self, model):
+    #    self.model = model
+    #    self.bgImage = self.model.bgImage
 
     def landmarks(self, l):
         self.draw_landmarks = l

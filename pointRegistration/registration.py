@@ -6,24 +6,25 @@ from pycpd import *
 from pointRegistration.model import Model
 
 
-def log(iteration, error, X, Y, ax):
-    print(str(iteration), str(error))
 
-class Registration:
+
+class Registration(Thread):
 
     def __init__(self, method, source_model, target_model, perc, callback, drawCallback):
-        #Thread.__init__(self)
+        Thread.__init__(self)
         self.method = method
         self.source_model = source_model
         self.target_model = target_model
         self.perc = perc
         self.callback = callback
         self.drawCallback = drawCallback
+        self.should_stop = False
 
-     #   self.run()
+        #self.run()
 
 
-    #def run(self):
+    def run(self):
+        print("hi there")
         # Decimate points
         source = self.decimate(self.source_model.model_data, self.perc)
         target = self.decimate(self.target_model.model_data, self.perc)
@@ -42,16 +43,26 @@ class Registration:
             reg = deformable_registration(** {'X': source, 'Y': target})
 
         model = Model()
-        data, reg_param = reg.register(partial(self.drawCallback, ax=None))
-        #self.target_model.model_data = data[0:int(self.target_model.model_data.size/3)-1]
-        #self.target_model.landmarks_3D = data[int(self.target_model.model_data.size/3) : int(data.size/3)]
 
-        model.setModelData(data[0: target.shape[0] - self.target_model.landmarks_3D.shape[0]])
-        model.setLandmarks(data[target.shape[0] - self.target_model.landmarks_3D.shape[0] : data.shape[0]])
-        model.centerData()
-        self.callback(model)
+        try:
+            # Se si vuole visualizzare i progressi usare questa versione
+            # data, reg_param = reg.register(partial(self.drawCallback, ax=None))
+            data, reg_param = reg.register(partial(self.log, ax=None))
+            model.setModelData(data[0: target.shape[0] - self.target_model.landmarks_3D.shape[0]])
+            model.setLandmarks(data[target.shape[0] - self.target_model.landmarks_3D.shape[0] : data.shape[0]])
+            model.centerData()
+            self.callback(model)
+        except Exception as ex:
+            print(ex)
+            return self.target_model  # Fail safe: rimetto il model di partenza
 
+    def stop(self):
+        self.should_stop = True
 
+    def log(self, iteration, error, X, Y, ax):
+        print(str(iteration), str(error))
+        if self.should_stop:
+            raise Exception("Registration has been stopped")
 
     def decimate(self, old_array, perc):
         if perc >= 100:

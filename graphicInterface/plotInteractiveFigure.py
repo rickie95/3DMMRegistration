@@ -15,6 +15,11 @@ class PlotInteractiveFigure(PlotFigure):
         # self.fig.canvas.mpl_connect('button_release_event', self.ReleaseClick)
         self.myTree = None
 
+
+    def loadModel(self, model):
+        self.myTree = None
+        super().loadModel(model)
+
     def selectNearestPixel(self, x_coord, y_coord):
         if self.myTree is None:  # calculate kdtree only if is needed
             print("Calculating 2DTree...")
@@ -39,5 +44,5 @@ class PlotInteractiveFigure(PlotFigure):
               ('double' if event.dblclick else 'single', event.button,
                event.x, event.y, event.xdata, event.ydata))
 
-    def loadLandmarks(self):
-        self.ax.scatter(self.model.landmarks_3D[:, 0], self.model.landmarks_3D[:, 1], c=self.landmarks_colors)
+    #def loadLandmarks(self):
+    #    self.ax.scatter(self.model.landmarks_3D[:, 0], self.model.landmarks_3D[:, 1], c=self.landmarks_colors)

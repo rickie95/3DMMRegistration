@@ -24,6 +24,11 @@ class UpperToolbar(QWidget):
         self.registBTN.setEnabled(False)
         layoutGB1.addWidget(self.registBTN, 0, 2)
 
+        self.stopBTN = QPushButton("Ferma")
+        self.stopBTN.clicked.connect(self.stopRegistration)
+        self.stopBTN.setEnabled(False)
+        layoutGB1.addWidget(self.stopBTN, 1, 2)
+
         label2 = QLabel("Percentuale di punti usati:")
         label2.setAlignment(Qt.AlignCenter)
         layoutGB1.addWidget(label2, 1, 0)
@@ -54,9 +59,17 @@ class UpperToolbar(QWidget):
         self.layout.setColumnStretch(2, 2)
 
     def registrate(self):
+        self.registBTN.setEnabled(False)
         method = self.registComboBox.currentData()
         percent = self.percComboBox.currentData()
         self.parent.registrate(method, percent)
+        self.stopBTN.setEnabled(True)
+
+    def stopRegistration(self):
+        self.parent.stopRegistrationThread()
+        self.registBTN.setEnabled(True)  # sarebbe da riabilitare successivamente
+        self.stopBTN.setEnabled(False)
+
 
     @pyqtSlot()
     def loadTarget(self):

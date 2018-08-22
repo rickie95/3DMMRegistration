@@ -11,7 +11,7 @@ class MainWidget(QWidget):
         self.source_model = Model("avgModel_bh_1779_NE.mat")
         self.target_model = None
         self.initUI()
-
+        self.registration_thread = None
 
     def initUI(self):
         # Griglia centrale con i due plot
@@ -44,17 +44,27 @@ class MainWidget(QWidget):
 
     def landmark_selected(self, colors):
         self.dx_widget.setLandmarksColors(colors)
+
     def registrate(self, method, percentage):
         print("registration with "+str(method)+", using "+str(percentage)+"% of points.")
-        self.parent().setStatus("Busy...")
-        Registration(method, self.target_model, self.source_model, percentage, self.registrateCallback, self.dx_widget.updatePlotCallback)
+        if self.registration_thread is None:
+            self.parent().setStatus("Busy...")
+            self.registration_thread = Registration(method, self.target_model, self.source_model, percentage, self.registrateCallback, self.dx_widget.updatePlotCallback)
+            self.registration_thread.start()
+
+    def stopRegistrationThread(self):
+        if self.registration_thread is not None:
+            self.registration_thread.stop()
 
     def registrateCallback(self, model):
         print("Registrazione completata")
-        #  carica il template deformato
-        #  caricalo sul plotFigure widget
         self.target_model = model
         self.target_model.bgImage = self.dx_widget.bgImage
         self.dx_widget.loadModel(self.target_model)
+        self.dx_widget.setLandmarksColors(self.sx_widget.landmarks_colors)
         self.dx_widget.drawData()
         self.parent().setStatusReady()
+        self.registration_thread = None
+
+    def interruptRegistration(self):
+        self.registration_thread.stop()
