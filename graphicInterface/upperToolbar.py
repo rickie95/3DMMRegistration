@@ -37,12 +37,14 @@ class UpperToolbar(QWidget):
         group2 = QGroupBox("Modello")
         layoutGB2 = QGridLayout()
         group2.setLayout(layoutGB2)
-        loadModelBTN = QPushButton("Carica...")
-        loadModelBTN.clicked.connect(self.loadModel)
-        layoutGB2.addWidget(loadModelBTN, 0, 0)
 
-        restoreBTN = QPushButton("Ripristina")
-        layoutGB2.addWidget(restoreBTN, 1, 0)
+        loadTargetBTN = QPushButton("Carica Target")
+        loadTargetBTN.clicked.connect(self.loadTarget)
+        layoutGB2.addWidget(loadTargetBTN, 1, 0)
+
+        loadSourceBTN = QPushButton("Carica Source")
+        loadSourceBTN.clicked.connect(self.loadSource)
+        layoutGB2.addWidget(loadSourceBTN, 0, 0)
 
         self.layout.addWidget(group1, 0, 0)
         self.layout.addWidget(group2, 0, 1)
@@ -57,14 +59,23 @@ class UpperToolbar(QWidget):
         self.parent.registrate(method, percent)
 
     @pyqtSlot()
-    def loadModel(self):
+    def loadTarget(self):
         options = QFileDialog.Options()
         filters = "File MAT (*.mat);;File WRML (*.wrl)"
         fileName, _ = QFileDialog.getOpenFileName(self, "Carica un modello", "",
                                                   filters, "File WRML (*.wrl)", options=options)
         if fileName:
-            print(fileName)
             self.parent.loadTarget(fileName)
+            self.registBTN.setEnabled(True)
+
+    @pyqtSlot()
+    def loadSource(self):
+        options = QFileDialog.Options()
+        filters = "File MAT (*.mat);;File WRML (*.wrl)"
+        fileName, _ = QFileDialog.getOpenFileName(self, "Carica un modello", "",
+                                                  filters, "File WRML (*.wrl)", options=options)
+        if fileName:
+            self.parent.loadSource(fileName)
             self.registBTN.setEnabled(True)
 
 
@@ -72,9 +83,10 @@ class RegistrationMethodsCombobox(QComboBox):
 
     def __init__(self):
         super(RegistrationMethodsCombobox, self).__init__()
-        self.addItem("ICP", 0)
+        #self.addItem("ICP", 0)
         self.addItem("CPD - Rigido", 1)
         self.addItem("CPD - Affine", 2)
         self.addItem("CPD - Deformabile", 3)
+
 
 

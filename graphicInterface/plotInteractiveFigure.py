@@ -13,10 +13,6 @@ class PlotInteractiveFigure(PlotFigure):
         # Attach event listeners
         self.fig.canvas.mpl_connect('button_press_event', self.onclick)
         # self.fig.canvas.mpl_connect('button_release_event', self.ReleaseClick)
-
-        sz = int(self.model.landmarks_3D.size / 3)
-        self.landmarks_colors = np.full(sz, "r")
-
         self.myTree = None
 
     def selectNearestPixel(self, x_coord, y_coord):
@@ -28,6 +24,8 @@ class PlotInteractiveFigure(PlotFigure):
         if dist < 5:  # TODO: non sarebbe male normalizzare
             self.landmarks_colors[index[0]] = "y" if self.landmarks_colors[index[0]] == "r" else "r"
             self.drawData()
+            if self.parent() is not None:
+                self.parent().landmark_selected(self.landmarks_colors)
 
     def onclick(self, event):
         print('%s click: button=%d, x=%d, y=%d, xdata=%f, ydata=%f' %
