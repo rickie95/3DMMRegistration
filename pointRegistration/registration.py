@@ -50,7 +50,7 @@ class Registration(Thread):
             data, reg_param = reg.register(partial(self.log, ax=None))
             model.setModelData(data[0: target.shape[0] - self.target_model.landmarks_3D.shape[0]])
             model.setLandmarks(data[target.shape[0] - self.target_model.landmarks_3D.shape[0] : data.shape[0]])
-            model.centerData()
+            #model.centerData()
             self.callback(model)
         except Exception as ex:
             print(ex)

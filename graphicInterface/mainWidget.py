@@ -23,7 +23,8 @@ class MainWidget(QWidget):
         self.sx_widget.drawData()
         grid_central.addWidget(self.dx_widget, 1, 2, 1, 2)
         self.dx_widget.drawData()
-        grid_central.addWidget(UpperToolbar(self), 0, 0, 1, 4)
+        self.toolbar = UpperToolbar(self)
+        grid_central.addWidget(self.toolbar, 0, 0, 1, 4)
         # Contenitore per i controlli
 
     def loadTarget(self, path):
@@ -65,6 +66,5 @@ class MainWidget(QWidget):
         self.dx_widget.drawData()
         self.parent().setStatusReady()
         self.registration_thread = None
-
-    def interruptRegistration(self):
-        self.registration_thread.stop()
+        self.toolbar.registBTN.setEnabled(True)
+        self.toolbar.stopBTN.setEnabled(False)
