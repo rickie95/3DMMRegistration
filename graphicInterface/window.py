@@ -1,10 +1,13 @@
 from graphicInterface.mainWidget import *
-
+from graphicInterface.console import Logger
+from PyQt5.QtGui import QIcon
 
 class Window(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        self.setWindowIcon(QIcon('icon.png'))
+        Logger()
         self.initUI()
 
     def initUI(self):
@@ -27,6 +30,3 @@ class Window(QMainWindow):
 
     def setStatusReady(self):
         self.statusBar().showMessage("Ready.")
-
-    def notify(self, message):
-        self.statusBar().showMessage("Ready. \t " + message)

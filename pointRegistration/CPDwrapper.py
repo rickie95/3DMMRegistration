@@ -4,7 +4,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from pycpd import *
 from pointRegistration.model import Model
 import numpy as np
-
+from graphicInterface.console import Logger
 import time
 
 def visualize(iteration, error, X, Y, ax):
@@ -18,7 +18,7 @@ def visualize(iteration, error, X, Y, ax):
     ax.scatter(X[:,0],  X[:,1], X[:,2], c='r', label='Red: Target')
     ax.scatter(Y[:,0],  Y[:,1], Y[:,2], c='b', label='Blu: Source')
     #ax.text(0.87, 0.92, 'Iteration: {:d}\nError: {:06.4f}'.format(iteration, error), horizontalalignment='center', verticalalignment='center', transform=ax.transAxes, fontsize='x-large')
-    print(iteration, error)
+    Logger.addRow(str("Iteration #"+str(iteration)+" error: "+str(error)))
     ax.legend(loc='upper left', fontsize='x-large')
     plt.draw()
     plt.pause(1)
