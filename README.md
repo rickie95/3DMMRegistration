@@ -2,7 +2,7 @@
 
 *A tool for 3D face models aligment. With a GUI.*
 
-![Application screenshot](/resources/screenGit1.png)
+![Application screenshot](https://github.com/rickie95/3DMMRegistration/blob/master/resources/gitScreen1.png)
 
 Shape Registrator works with 3D model and supports **.mat** (Matlab) and **.wrl** (WRML) file formats.
 
