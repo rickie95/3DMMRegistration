@@ -19,6 +19,8 @@ class PlotFigure(FigureCanvas):
         self.draw_landmarks = landmarks
         self.bgImage = None
         self.model = model
+        self.registration_points = np.empty((0, 0))
+        self.drawDisplacement = False
 
         if model is not None:
             self.loadModel(model)
@@ -26,15 +28,22 @@ class PlotFigure(FigureCanvas):
     def loadModel(self, model):
         self.model = model
         self.bgImage = self.model.bgImage
-        sz = int(self.model.landmarks_3D.size / 3)
-        self.landmarks_colors = np.full(sz, "r")
+        self.landmarks_colors = np.full(self.model.landmarks_3D.shape[0], "r")
+        self.data_colors = np.full(self.model.model_data.shape[0], "b")
+        self.drawDisplacement = False
 
     def loadData(self):
         #self.ax.plot([0.2, 0.5], [0.2, 0.5])
-        self.ax.scatter(self.model.model_data[:, 0], self.model.model_data[:, 1], s=0.5, c="blue")
+        self.ax.scatter(self.model.model_data[:, 0], self.model.model_data[:, 1], s=0.5, c=self.data_colors)
 
     def loadLandmarks(self):
         self.ax.scatter(self.model.landmarks_3D[:, 0], self.model.landmarks_3D[:, 1], c=self.landmarks_colors)
+
+    def loadDisplacement(self):
+        self.ax.scatter(self.model.displacement_map[:, 0], self.model.displacement_map[:, 1], s=0.5)
+
+    def showDisplacement(self):
+        self.drawDisplacement = True if self.model.displacement_map is not None else False
 
     def drawData(self):
         self.ax.cla()
@@ -47,7 +56,10 @@ class PlotFigure(FigureCanvas):
             #ratio = a/b
             self.ax.set_xlim(-a*1.1, a*1.1) # (-110, 110)
             self.ax.set_ylim(-b*1.1, b*1.1) # (-100, 100)
-            self.loadData()
+            if not self.drawDisplacement:
+                self.loadData()
+            else:
+                self.loadDisplacement()
             if self.draw_landmarks:
                 self.loadLandmarks()
             if self.bgImage is not None:
@@ -55,10 +67,36 @@ class PlotFigure(FigureCanvas):
                 # SX DX BOTTOM UP
                 self.ax.imshow(img, extent=[-b*1.05, b*1.03, -b*1.03, b*1.05])
         self.draw()
+        self.flush_events()
 
     #def setModel(self, model):
     #    self.model = model
     #    self.bgImage = self.model.bgImage
+
+    def select_area(self, x_coord, y_coord, width, height):
+        x_data = self.model.model_data[:, 0]
+        y_data = self.model.model_data[:, 1]
+
+        x_ind = np.where((x_coord <= x_data) & (x_data <= x_coord + width))
+        y_ind = np.where((y_coord <= y_data) & (y_data <= y_coord + height))
+
+        x_data = y_data = None
+        ind = np.intersect1d(np.array(x_ind), np.array(y_ind), assume_unique=True)
+        x_ind = y_ind = None
+        self.highlight_data(ind)  # evidenzio i punti relativi agli indici
+
+        #if self.parent() is not None and self.title == "Source":
+        #    self.parent().data_selected(x_coord, y_coord, width, height)
+
+    def highlight_data(self, indices):
+        if indices[0] != -1:
+            self.data_colors[indices] = "y"
+            self.model.addRegistrationPoints(indices)
+            self.drawData()
+        else:
+            self.data_colors[list(range(self.model.model_data.shape[0]))] = "b"
+            self.model.addRegistrationPoints([-1])
+            self.drawData()
 
     def landmarks(self, l):
         self.draw_landmarks = l
@@ -66,6 +104,13 @@ class PlotFigure(FigureCanvas):
     def setLandmarksColors(self, colors):
         self.landmarks_colors = colors
         self.drawData()
+
+    def setDataColors(self, colors):
+        self.data_colors = colors
+        self.drawData()
+
+    def get_ax(self):
+        return self.ax
 
     def updatePlotCallback(self, iteration, error, X, Y, ax):
         self.ax.cla()
@@ -83,11 +128,3 @@ class PlotFigure(FigureCanvas):
             print(ex)
         self.draw()
         self.flush_events()
-
-#m = Model("F0001_NE00WH_F3D.wrl", "F0001_NE00WH_F3D.bnd", "F0001_NE00WH_F2D.png")
-#m = Model("M0001_NE00AM_F3D.wrl", "M0001_NE00AM_F3D.bnd", "M0001_NE00AM_F2D.png")
-#s = PlotFigure(m)
-#s.drawData()
-
-
-

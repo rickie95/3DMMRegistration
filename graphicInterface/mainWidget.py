@@ -4,7 +4,9 @@ from pointRegistration.model import Model
 from pointRegistration.registration import Registration
 from graphicInterface.upperToolbar import *
 from graphicInterface.console import Logger
-
+from PyQt5.QtWidgets import QMessageBox
+import matplotlib.pyplot as plt
+import numpy as np
 
 class MainWidget(QWidget):
     def __init__(self, parent):
@@ -30,6 +32,7 @@ class MainWidget(QWidget):
         grid_central.addWidget(self.toolbar, 0, 0, 1, 4)
         grid_central.setRowStretch(0, 1)
         grid_central.setRowStretch(1, 10)
+
         # Contenitore per i controlli
 
     def loadTarget(self, path):
@@ -48,14 +51,25 @@ class MainWidget(QWidget):
         self.sx_widget.drawData()
         Logger.addRow(str("File loaded correctly: " + path))
 
+    def restoreHighlight(self):
+        self.sx_widget.highlight_data([-1])
+
     def landmark_selected(self, colors):
         self.dx_widget.setLandmarksColors(colors)
 
+    def data_selected(self, x_coord, y_coord, width, height):    # apply color to target
+        self.dx_widget.select_area(x_coord, y_coord, width, height)
+
     def registrate(self, method, percentage):
-        if self.registration_thread is None:
+        if not self.sx_widget.there_are_points_highlighted():  # names are everything
+            QMessageBox.critical(self, 'Error', "No rigid points have been selected.")
+            raise Exception("No rigid points selected")
+
+        if self.registration_thread is None and self.sx_widget.there_are_points_highlighted():
             self.parent().setStatus("Busy...")
-            self.registration_thread = Registration(method, self.target_model, self.source_model, percentage, self.registrateCallback, self.dx_widget.updatePlotCallback)
+            self.registration_thread = Registration(method, self.sx_widget.model, self.target_model, percentage, self.registrateCallback, self.dx_widget.updatePlotCallback)
             self.registration_thread.start()
+
 
     def stopRegistrationThread(self):
         if self.registration_thread is not None:
@@ -67,7 +81,7 @@ class MainWidget(QWidget):
         self.target_model = model
         self.target_model.bgImage = self.dx_widget.bgImage
         self.dx_widget.loadModel(self.target_model)
-        self.dx_widget.setLandmarksColors(self.sx_widget.landmarks_colors)
+        self.dx_widget.showDisplacement()
         self.dx_widget.drawData()
         self.parent().setStatusReady()
         self.registration_thread = None

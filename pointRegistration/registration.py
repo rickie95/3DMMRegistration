@@ -3,6 +3,7 @@ from threading import Thread
 from functools import partial
 import numpy as np
 from pycpd import *
+from pointRegistration.displacementMap import displacementMap
 from pointRegistration.model import Model
 from graphicInterface.console import Logger
 import time
@@ -22,11 +23,12 @@ class Registration(Thread):
 
     def run(self):
         # Decimate points
-        source = self.decimate(self.source_model.model_data, self.perc)
+        #source = self.decimate(self.source_model.model_data, self.perc)
+        source = self.source_model.getRegistrationPoints()
         target = self.decimate(self.target_model.model_data, self.perc)
         Logger.addRow("Points decimated.")
         # Add landmarks data
-        source = np.concatenate((source, self.source_model.landmarks_3D), axis=0)
+        #source = np.concatenate((source, self.source_model.landmarks_3D), axis=0)
         target = np.concatenate((target, self.target_model.landmarks_3D), axis=0)
         Logger.addRow("Landmarks added.")
 
@@ -51,9 +53,15 @@ class Registration(Thread):
             # Se si vuole visualizzare i progressi usare questa versione
             # data, reg_param = reg.register(partial(self.drawCallback, ax=None))
             data, reg_param = reg.register(partial(self.log, ax=None))
-            model.setModelData(data[0: target.shape[0] - self.target_model.landmarks_3D.shape[0]])
+
+            if self.method == 1:  # Transform the whole point set if CPD Rigid
+                model.setModelData(reg.transform_point_cloud(self.source_model.model_data))
+            else:
+                model.setModelData(data[0: target.shape[0] - self.target_model.landmarks_3D.shape[0]])
+
             model.setLandmarks(data[target.shape[0] - self.target_model.landmarks_3D.shape[0] : data.shape[0]])
-            model.centerData()
+            #model.centerData()
+            model.setDisplacementMap(displacementMap(model.model_data, self.target_model.model_data, 3))
         except Exception as ex:
             Logger.addRow(str(ex))
             model = self.target_model  # Fail safe: rimetto il model di partenza
@@ -65,7 +73,7 @@ class Registration(Thread):
         self.should_stop = True
 
     def log(self, iteration, error, X, Y, ax):
-        sss = "Iteration n" + str(iteration) + " error: " + str(error)
+        sss = "Iteration #" + str(iteration) + " error: " + str(error)
         Logger.addRow(sss)
         if self.should_stop:
             raise Exception("Registration has been stopped")

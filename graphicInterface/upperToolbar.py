@@ -52,6 +52,9 @@ class UpperToolbar(QWidget):
         loadSourceBTN.clicked.connect(self.loadSource)
         layoutGB2.addWidget(loadSourceBTN, 0, 0)
 
+        restoreBTN = QPushButton("Restore")
+        restoreBTN.clicked.connect(self.restore)
+        layoutGB2.addWidget(restoreBTN)
         #  LOGGER GROUP
 
         group3 = QGroupBox("Log")
@@ -70,17 +73,22 @@ class UpperToolbar(QWidget):
 
 
     def registrate(self):
-        self.registBTN.setEnabled(False)
         method = self.registComboBox.currentData()
         percent = self.percComboBox.currentData()
-        self.parent.registrate(method, percent)
-        self.stopBTN.setEnabled(True)
+        try:
+            self.parent.registrate(method, percent)
+            self.registBTN.setEnabled(False)
+            self.stopBTN.setEnabled(True)
+        except Exception as ex:
+            print(ex)
 
     def stopRegistration(self):
         self.parent.stopRegistrationThread()
         self.registBTN.setEnabled(True)  # sarebbe da riabilitare successivamente
         self.stopBTN.setEnabled(False)
 
+    def restore(self):
+        self.parent.restoreHighlight()
 
     @pyqtSlot()
     def loadTarget(self):
