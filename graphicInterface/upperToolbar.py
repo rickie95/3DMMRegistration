@@ -44,19 +44,23 @@ class UpperToolbar(QWidget):
         layoutGB2 = QGridLayout()
         group2.setLayout(layoutGB2)
 
-        loadTargetBTN = QPushButton("Load Target")
-        loadTargetBTN.clicked.connect(self.loadTarget)
-        layoutGB2.addWidget(loadTargetBTN, 1, 0)
-
         loadSourceBTN = QPushButton("Load Source")
         loadSourceBTN.clicked.connect(self.loadSource)
         layoutGB2.addWidget(loadSourceBTN, 0, 0)
 
         restoreBTN = QPushButton("Restore")
         restoreBTN.clicked.connect(self.restore)
-        layoutGB2.addWidget(restoreBTN)
-        #  LOGGER GROUP
+        layoutGB2.addWidget(restoreBTN, 1, 0)
 
+        loadTargetBTN = QPushButton("Load Target")
+        loadTargetBTN.clicked.connect(self.loadTarget)
+        layoutGB2.addWidget(loadTargetBTN, 0, 1)
+
+        saveTargetBTN = QPushButton("Save Target")
+        saveTargetBTN.clicked.connect(self.saveTarget)
+        layoutGB2.addWidget(saveTargetBTN, 1, 1)
+
+        #  LOGGER GROUP
         group3 = QGroupBox("Log")
         layoutGB3 = QGridLayout()
         group3.setLayout(layoutGB3)
@@ -109,6 +113,15 @@ class UpperToolbar(QWidget):
         if fileName:
             self.parent.loadSource(fileName)
             self.registBTN.setEnabled(True)
+
+    @pyqtSlot()
+    def saveTarget(self):
+        options = QFileDialog.Options()
+        filters = "MAT File (*.mat);;File (*.*)"
+        filename, _ = QFileDialog.getSaveFileName(self, None, "Save model", filter=filters,
+                                    initialFilter="MAT File (*.mat)", options=options)
+        if filename:
+            self.parent.saveTarget(filename)
 
 
 class RegistrationMethodsCombobox(QComboBox):

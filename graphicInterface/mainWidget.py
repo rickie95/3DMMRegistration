@@ -5,6 +5,7 @@ from pointRegistration.registration import Registration
 from graphicInterface.upperToolbar import *
 from graphicInterface.console import Logger
 from PyQt5.QtWidgets import QMessageBox
+import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -12,7 +13,7 @@ class MainWidget(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         Logger.addRow(str("Starting up.."))
-        self.source_model = Model("avgModel_bh_1779_NE.mat")
+        self.source_model = Model("./data/avgModel_bh_1779_NE.mat")
         self.target_model = None
         self.initUI()
         self.registration_thread = None
@@ -50,6 +51,9 @@ class MainWidget(QWidget):
         self.sx_widget.loadModel(self.source_model)
         self.sx_widget.drawData()
         Logger.addRow(str("File loaded correctly: " + path))
+
+    def saveTarget(self, filepath):
+        self.dx_widget.model.saveModel(filepath)
 
     def restoreHighlight(self):
         self.sx_widget.highlight_data([-1])

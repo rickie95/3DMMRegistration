@@ -34,6 +34,7 @@ class Model:
 
         self.bgImage = None
         self.registration_points = None  # Contains indices
+        self.registration_params = None
         self.displacement_map = None
 
         if image is not None and Path(image).is_file():
@@ -70,4 +71,16 @@ class Model:
         self.registration_points = np.unique(self.registration_points)
         return np.array(self.model_data[self.registration_points])
 
+    def saveModel(self, filepath):
+        f = h5py.File(filepath, "w")
+        #f.create_dataset("model_data", data=self.model_data)
+        #f.create_dataset("landmarks3D", data=self.landmarks_3D)
+        if self.displacement_map is not None:
+            f.create_dataset("displacement_map", data=self.displacement_map)
+        if self.registration_params is not None:
+            f.create_dataset("registration_params/scale_matrix", data=self.registration_params[0]) # scale
+            f.create_dataset("registration_params/rotation_matrix", data=self.registration_params[1]) # rotation
+            f.create_dataset("registration_params/traslation_matrix", data=self.registration_params[2]) # traslation
+        f.close()
+        Logger.addRow(str("File saved: " + filepath))
 

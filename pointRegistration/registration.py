@@ -59,6 +59,7 @@ class Registration(Thread):
             else:
                 model.setModelData(data[0: target.shape[0] - self.target_model.landmarks_3D.shape[0]])
 
+            model.registration_params = reg_param
             model.setLandmarks(data[target.shape[0] - self.target_model.landmarks_3D.shape[0] : data.shape[0]])
             #model.centerData()
             model.setDisplacementMap(displacementMap(model.model_data, self.target_model.model_data, 3))
