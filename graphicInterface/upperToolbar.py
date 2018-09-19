@@ -64,6 +64,10 @@ class UpperToolbar(QWidget):
         batchBTN.clicked.connect(self.batchReg)
         layoutGB2.addWidget(batchBTN, 0, 2)
 
+        save_logBTN = QPushButton("Save log on file")
+        save_logBTN.clicked.connect(self.savelog_onfile)
+        layoutGB2.addWidget(save_logBTN, 1, 2)
+
         #  LOGGER GROUP
         group3 = QGroupBox("Log")
         layoutGB3 = QGridLayout()
@@ -89,6 +93,9 @@ class UpperToolbar(QWidget):
             self.stopBTN.setEnabled(True)
         except Exception as ex:
             print(ex)
+
+    def savelog_onfile(self):
+        self.parent.savelog_onfile()
 
     @pyqtSlot()
     def batchReg(self):

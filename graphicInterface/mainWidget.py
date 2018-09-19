@@ -113,3 +113,5 @@ class MainWidget(QWidget):
                                                                self.registrateBatchCallback)
             self.registration_thread.start()
 
+    def savelog_onfile(self):
+        Logger.save_log()
