@@ -54,6 +54,7 @@ class MainWidget(QWidget):
 
     def saveTarget(self, filepath):
         self.dx_widget.model.saveModel(filepath)
+        self.dx_widget.model.shootDisplacementMap(filepath[0:-3]+"png")
 
     def restoreHighlight(self):
         self.sx_widget.highlight_data([-1])
