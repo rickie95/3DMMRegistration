@@ -9,5 +9,5 @@ def displacementMap(source_points, target_points, max_dist=1.25):
     # indices contiene tutti i punti che distano max_dist dal loro punto più vicino
     #indices_range = source_points.shape[0]
     ##displacement_indices = np.delete(np.arange(0, indices_range), indices)
-    displacement_points = np.delete(target_points, indices, axis=0)
+    displacement_points = np.delete(source_points, indices, axis=0) # restituisco tutti i punti di source
     return displacement_points

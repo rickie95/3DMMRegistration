@@ -23,12 +23,12 @@ class Registration(Thread):
 
     def run(self):
         # Decimate points
-        #source = self.decimate(self.source_model.model_data, self.perc)
+        # source = self.decimate(self.source_model.model_data, self.perc)
         source = self.source_model.getRegistrationPoints()
         target = self.decimate(self.target_model.model_data, self.perc)
         Logger.addRow("Points decimated.")
         # Add landmarks data
-        #source = np.concatenate((source, self.source_model.landmarks_3D), axis=0)
+        # source = np.concatenate((source, self.source_model.landmarks_3D), axis=0)
         target = np.concatenate((target, self.target_model.landmarks_3D), axis=0)
         Logger.addRow("Landmarks added.")
 
@@ -61,7 +61,8 @@ class Registration(Thread):
 
             model.registration_params = reg_param
             model.setLandmarks(data[target.shape[0] - self.target_model.landmarks_3D.shape[0] : data.shape[0]])
-            #model.centerData()
+            model.filename = self.target_model.filename
+            # model.centerData()
             model.setDisplacementMap(displacementMap(model.model_data, self.target_model.model_data, 3))
         except Exception as ex:
             Logger.addRow(str(ex))

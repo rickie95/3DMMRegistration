@@ -27,8 +27,9 @@ class Logger:
             Logger.instance.insertPlainText(row+"\n")
             time.sleep(0.1)
             Logger.instance.moveCursor(QTextCursor.End)
+            time.sleep(0.1)
         else:
-            print("cazzo")
+            print(row+"\n")
 
     @staticmethod
     def setParent(parent):
