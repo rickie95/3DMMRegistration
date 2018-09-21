@@ -1,5 +1,6 @@
 from graphicInterface.mainWidget import *
 from graphicInterface.console import Logger
+from pointRegistration.registration_param import RegistrationParameters
 from PyQt5.QtGui import QIcon
 
 class Window(QMainWindow):
@@ -8,15 +9,21 @@ class Window(QMainWindow):
         super().__init__()
         self.setWindowIcon(QIcon('resources/icon.png'))
         Logger()
+        self.statusLabel = QLabel("")
         self.initUI()
+
 
     def initUI(self):
         self.mainWidget = MainWidget(self)
         self.setCentralWidget(self.mainWidget)
         self.resize(1000, 600)
         self.center()
+        statusBar = QStatusBar()
+        self.setStatusBar(statusBar)
+        statusBar.addWidget(self.statusLabel)
+        statusBar.addPermanentWidget(QLabel(RegistrationParameters().to_string()))
         self.setWindowTitle('Shape Registrator')
-        self.statusBar().showMessage("Ready.")
+        self.setStatus("Ready.")
         self.show()
 
     def center(self):
@@ -26,7 +33,7 @@ class Window(QMainWindow):
         self.move(qr.topLeft())
 
     def setStatus(self, message):
-        self.statusBar().showMessage(message)
+        self.statusLabel.setText(message)
 
     def setStatusReady(self):
-        self.statusBar().showMessage("Ready.")
+        self.setStatus("Ready")

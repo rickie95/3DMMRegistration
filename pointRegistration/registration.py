@@ -1,11 +1,11 @@
-from pointRegistration import *
-from threading import Thread
-from functools import partial
-import numpy as np
-from pycpd import *
 from pointRegistration.displacementMap import displacementMap
+from pointRegistration.registration_param import RegistrationParameters
 from pointRegistration.model import Model
 from graphicInterface.console import Logger
+from threading import Thread
+from functools import partial
+from pycpd import *
+import numpy as np
 import time
 
 
@@ -32,18 +32,19 @@ class Registration(Thread):
         target = np.concatenate((target, self.target_model.landmarks_3D), axis=0)
         Logger.addRow("Landmarks added.")
 
-        if self.method == 0:  # ICP
-            print("ICP non è attualmente implementato")
-            return
+        ps = RegistrationParameters().getParams()
+
         if self.method == 1:  # CPD - RIGID
-            reg = rigid_registration(**{'X': source, 'Y': target})
+            reg = rigid_registration(**{'X': source, 'Y': target, 'sigma2': ps['sigma2'],
+                                        'max_iterations': ps['max_iterations'], 'tolerance': ps['tolerance'],
+                                        'w': ps['w']})
             meth = "CPD Rigid"
-        if self.method == 2:  # CPD - AFFINE
-            reg = affine_registration(**{'X': source, 'Y': target})
-            meth = "CPD Affine"
-        if self.method == 3:  # CPD - DEFORMABLE / NON - RIGID
-            reg = deformable_registration(** {'X': source, 'Y': target})
-            meth = "CPD Deformable"
+        else:
+            Logger.addRow("Method not supported. Don't worry, I'm gonna use CPD rigid and save the day.")
+            reg = rigid_registration(**{'X': source, 'Y': target, 'sigma2': ps['sigma2'],
+                                        'max_iterations': ps['max_iterations'], 'tolerance': ps['tolerance'],
+                                        'w': ps['w']})
+            meth = "CPD Rigid"
 
         Logger.addRow("Starting registration with " + meth + ", using " + str(self.perc) + "% of points.")
         model = Model()
