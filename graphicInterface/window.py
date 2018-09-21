@@ -6,7 +6,7 @@ class Window(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowIcon(QIcon('icon.png'))
+        self.setWindowIcon(QIcon('resources/icon.png'))
         Logger()
         self.initUI()
 

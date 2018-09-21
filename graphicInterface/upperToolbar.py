@@ -35,7 +35,7 @@ class UpperToolbar(QWidget):
         layoutGB1.addWidget(label2, 1, 0)
 
         self.percComboBox = QComboBox()
-        for x in range(30, 110, 10):
+        for x in range(100, 20, -10):
             self.percComboBox.addItem(str(x) + "%", x)
         layoutGB1.addWidget(self.percComboBox, 1, 1)
 
@@ -59,6 +59,14 @@ class UpperToolbar(QWidget):
         saveTargetBTN = QPushButton("Save Target")
         saveTargetBTN.clicked.connect(self.saveTarget)
         layoutGB2.addWidget(saveTargetBTN, 1, 1)
+
+        batchBTN = QPushButton("Batch registration")
+        batchBTN.clicked.connect(self.batchReg)
+        layoutGB2.addWidget(batchBTN, 0, 2)
+
+        save_logBTN = QPushButton("Save log on file")
+        save_logBTN.clicked.connect(self.savelog_onfile)
+        layoutGB2.addWidget(save_logBTN, 1, 2)
 
         #  LOGGER GROUP
         group3 = QGroupBox("Log")
@@ -85,6 +93,26 @@ class UpperToolbar(QWidget):
             self.stopBTN.setEnabled(True)
         except Exception as ex:
             print(ex)
+
+    def savelog_onfile(self):
+        self.parent.savelog_onfile()
+
+    @pyqtSlot()
+    def batchReg(self):
+        options = QFileDialog.Options()
+        filters = "File MAT (*.mat);;File WRML (*.wrl)"
+        fileNames, _ = QFileDialog.getOpenFileNames(self, "Load a model", "",
+                                                  filters, "File WRML (*.wrl)", options=options)
+        if fileNames:
+            method = self.registComboBox.currentData()
+            percent = self.percComboBox.currentData()
+            try:
+                self.parent.registrate_batch(method, percent, fileNames)
+                self.registBTN.setEnabled(False)
+                self.stopBTN.setEnabled(True)
+            except Exception as ex:
+                print(ex)
+
 
     def stopRegistration(self):
         self.parent.stopRegistrationThread()

@@ -1,13 +1,13 @@
-from graphicInterface.plotFigure import PlotFigure
 from graphicInterface.plotInteractiveFigure import PlotInteractiveFigure
-from pointRegistration.model import Model
+from pointRegistration.batchRegistration import BatchRegistrationThread
 from pointRegistration.registration import Registration
+from graphicInterface.plotFigure import PlotFigure
 from graphicInterface.upperToolbar import *
 from graphicInterface.console import Logger
+from pointRegistration.model import Model
 from PyQt5.QtWidgets import QMessageBox
-import h5py
-import matplotlib.pyplot as plt
-import numpy as np
+import threading
+
 
 class MainWidget(QWidget):
     def __init__(self, parent):
@@ -54,6 +54,7 @@ class MainWidget(QWidget):
 
     def saveTarget(self, filepath):
         self.dx_widget.model.saveModel(filepath)
+        self.dx_widget.model.shootDisplacementMap(filepath[0:-3]+"png")
 
     def restoreHighlight(self):
         self.sx_widget.highlight_data([-1])
@@ -74,7 +75,6 @@ class MainWidget(QWidget):
             self.registration_thread = Registration(method, self.sx_widget.model, self.target_model, percentage, self.registrateCallback, self.dx_widget.updatePlotCallback)
             self.registration_thread.start()
 
-
     def stopRegistrationThread(self):
         if self.registration_thread is not None:
             Logger.addRow(str("Trying to stop registration thread..."))
@@ -91,3 +91,28 @@ class MainWidget(QWidget):
         self.registration_thread = None
         self.toolbar.registBTN.setEnabled(True)
         self.toolbar.stopBTN.setEnabled(False)
+
+
+    def registrateBatchCallback(self):
+        try:
+            Logger.addRow(str("Registration completed."))
+            self.registration_thread = None
+            self.parent().setStatus("Ready.")
+        except Exception as ex:
+            print(ex)
+
+    def registrate_batch(self, method, percentage, filenames):
+
+        if not self.sx_widget.there_are_points_highlighted():  # names are everything
+            QMessageBox.critical(self, 'Error', "No rigid points have been selected.")
+            raise Exception("No rigid points selected")
+
+        if self.registration_thread is None and self.sx_widget.there_are_points_highlighted():
+            self.parent().setStatus("Busy...")
+
+            self.registration_thread = BatchRegistrationThread(self.sx_widget.model, filenames, percentage,
+                                                               self.registrateBatchCallback)
+            self.registration_thread.start()
+
+    def savelog_onfile(self):
+        Logger.save_log()

@@ -1,10 +1,12 @@
-import numpy as np
-from pointRegistration import file3DLoader
-import h5py
-from pathlib import Path
 from graphicInterface.console import Logger
+from pointRegistration import file3DLoader
+from pathlib import Path
 
-# todo: aggiungere il campo registration_points
+import matplotlib.pyplot as plt
+import numpy as np
+import h5py
+import ntpath
+
 
 class Model:
 
@@ -17,6 +19,7 @@ class Model:
         :param image: path to the associated image (opt)
         """
         if path_data is not None:
+            self.filename = (Model.__path_leaf__(path_data))[0:-4]
             if path_landmarks is None:
                 file = h5py.File(path_data, 'r')  # Caso .mat
                 self.setModelData(np.transpose(np.array(file["avgModel"])))
@@ -32,8 +35,9 @@ class Model:
 
             self.centerData()
 
+
         self.bgImage = None
-        self.registration_points = None  # Contains indices
+        self.registration_points = np.empty((0, 3), dtype=int)  # Contains indices
         self.registration_params = None
         self.displacement_map = None
 
@@ -62,9 +66,6 @@ class Model:
         if reg_points[0] == -1:
             self.registration_points = np.empty((0, 3))
 
-        if self.registration_points is None:
-            self.registration_points = np.empty((0, 3), dtype=int)
-
         self.registration_points = np.append(self.registration_points, reg_points)
 
     def getRegistrationPoints(self):
@@ -84,3 +85,12 @@ class Model:
         f.close()
         Logger.addRow(str("File saved: " + filepath))
 
+    def shootDisplacementMap(self, filepath):
+        plt.scatter(self.displacement_map[:, 0], self.displacement_map[:, 1], s=0.5)
+        plt.savefig(str(filepath[0:-3]+"png"))
+        plt.close()
+
+    @staticmethod
+    def __path_leaf__(path):
+        head, tail = ntpath.split(path)
+        return tail or ntpath.basename(head)
