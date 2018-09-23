@@ -54,4 +54,4 @@ The application was tested so far with Python 3.7 x64 operating on Windows 10. S
 
 [2] Alessandro Soci and Gabriele Barlacchi, [AlessandroSoci/3DMM-Facial-Expression-from-Webcam](https://github.com/AlessandroSoci/3DMM-Facial-Expression-from-Webcam)
 
-[3] Alessandro Sestini and Francesco Lombardi, "*Studio e predizione di espressioni facciali per modelli 3D*"
+[3] Alessandro Sestini and Francesco Lombardi, [fralomba/Facial-Expression-Prediction](https://github.com/fralomba/Facial-Expression-Prediction)
