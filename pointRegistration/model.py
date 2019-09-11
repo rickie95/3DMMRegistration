@@ -35,7 +35,6 @@ class Model:
 
             self.centerData()
 
-
         self.bgImage = None
         self.registration_points = np.empty((0, 3), dtype=int)  # Contains indices
         self.registration_params = None

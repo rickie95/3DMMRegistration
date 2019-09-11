@@ -26,7 +26,7 @@ class UpperToolbar(QWidget):
         layoutGB1.addWidget(self.registBTN, 0, 2)
 
         self.stopBTN = QPushButton("Stop")
-        self.stopBTN.clicked.connect(self.stopRegistration)
+        self.stopBTN.clicked.connect(self.stop_registration)
         self.stopBTN.setEnabled(False)
         layoutGB1.addWidget(self.stopBTN, 1, 2)
 
@@ -45,7 +45,7 @@ class UpperToolbar(QWidget):
         group2.setLayout(layoutGB2)
 
         loadSourceBTN = QPushButton("Load Source")
-        loadSourceBTN.clicked.connect(self.loadSource)
+        loadSourceBTN.clicked.connect(self.load_source)
         layoutGB2.addWidget(loadSourceBTN, 0, 0)
 
         restoreBTN = QPushButton("Restore")
@@ -53,15 +53,15 @@ class UpperToolbar(QWidget):
         layoutGB2.addWidget(restoreBTN, 1, 0)
 
         loadTargetBTN = QPushButton("Load Target")
-        loadTargetBTN.clicked.connect(self.loadTarget)
+        loadTargetBTN.clicked.connect(self.load_target)
         layoutGB2.addWidget(loadTargetBTN, 0, 1)
 
         saveTargetBTN = QPushButton("Save Target")
-        saveTargetBTN.clicked.connect(self.saveTarget)
+        saveTargetBTN.clicked.connect(self.save_target)
         layoutGB2.addWidget(saveTargetBTN, 1, 1)
 
         batchBTN = QPushButton("Batch registration")
-        batchBTN.clicked.connect(self.batchReg)
+        batchBTN.clicked.connect(self.batch_reg)
         layoutGB2.addWidget(batchBTN, 0, 2)
 
         save_logBTN = QPushButton("Save log on file")
@@ -83,7 +83,6 @@ class UpperToolbar(QWidget):
         self.layout.setColumnStretch(1, 1)
         self.layout.setColumnStretch(2, 4)
 
-
     def registrate(self):
         method = self.registComboBox.currentData()
         percent = self.percComboBox.currentData()
@@ -97,66 +96,71 @@ class UpperToolbar(QWidget):
     def savelog_onfile(self):
         self.parent.savelog_onfile()
 
+    def stop_registration(self):
+        self.parent.stop_registration_thread()
+        self.registBTN.setEnabled(True)
+        self.stopBTN.setEnabled(False)
+
+    def restore(self):
+        self.parent.restore_highlight()
+
     @pyqtSlot()
-    def batchReg(self):
-        options = QFileDialog.Options()
-        filters = "File MAT (*.mat);;File WRML (*.wrl)"
-        fileNames, _ = QFileDialog.getOpenFileNames(self, "Load a model", "",
-                                                  filters, "File WRML (*.wrl)", options=options)
-        if fileNames:
+    def batch_reg(self):
+        file_names = self.load_file(multiple_files=True)
+        if file_names:
             method = self.registComboBox.currentData()
             percent = self.percComboBox.currentData()
             try:
-                self.parent.registrate_batch(method, percent, fileNames)
+                self.parent.registrate_batch(method, percent, file_names)
                 self.registBTN.setEnabled(False)
                 self.stopBTN.setEnabled(True)
             except Exception as ex:
                 print(ex)
 
-
-    def stopRegistration(self):
-        self.parent.stopRegistrationThread()
-        self.registBTN.setEnabled(True)  # sarebbe da riabilitare successivamente
-        self.stopBTN.setEnabled(False)
-
-    def restore(self):
-        self.parent.restoreHighlight()
-
     @pyqtSlot()
-    def loadTarget(self):
-        options = QFileDialog.Options()
-        filters = "File MAT (*.mat);;File WRML (*.wrl)"
-        fileName, _ = QFileDialog.getOpenFileName(self, "Load a model", "",
-                                                  filters, "File WRML (*.wrl)", options=options)
-        if fileName:
-            self.parent.loadTarget(fileName)
+    def load_target(self):
+        file_name = self.load_file()
+
+        if file_name:
+            self.parent.load_target(file_name)
             self.registBTN.setEnabled(True)
 
     @pyqtSlot()
-    def loadSource(self):
-        options = QFileDialog.Options()
-        filters = "File MAT (*.mat);;File WRML (*.wrl)"
-        fileName, _ = QFileDialog.getOpenFileName(self, "Load a model", "",
-                                                  filters, "File WRML (*.wrl)", options=options)
-        if fileName:
-            self.parent.loadSource(fileName)
+    def load_source(self):
+        file_name = self.load_file()
+        if file_name:
+            self.parent.load_source(file_name)
             self.registBTN.setEnabled(True)
 
+    def load_file(self, multiple_files=False):
+        dlg = QFileDialog()
+        options = dlg.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        filters = "File MAT (*.mat);;File WRML (*.wrl)"
+        if multiple_files:
+            file_name, _ = dlg.getOpenFileNames(self, "Load a model", "", filters, "File WRML (*.wrl)", options=options)
+        else:
+            file_name, _ = dlg.getOpenFileName(self, "Load a model", "", filters, "File WRML (*.wrl)", options=options)
+
+        return file_name
+
     @pyqtSlot()
-    def saveTarget(self):
-        options = QFileDialog.Options()
+    def save_target(self):
+        dlg = QFileDialog()
+        options = dlg.Options()
+        options |= dlg.DontUseNativeDialog
         filters = "MAT File (*.mat);;File (*.*)"
-        filename, _ = QFileDialog.getSaveFileName(self, None, "Save model", filter=filters,
-                                    initialFilter="MAT File (*.mat)", options=options)
+        filename, _ = dlg.getSaveFileName(self, None, "Save model", filter=filters, initialFilter="MAT File (*.mat)",
+                                          options=options)
         if filename:
-            self.parent.saveTarget(filename)
+            self.parent.save_target(filename)
 
 
 class RegistrationMethodsCombobox(QComboBox):
 
     def __init__(self):
         super(RegistrationMethodsCombobox, self).__init__()
-        #self.addItem("ICP", 0)
+        # self.addItem("ICP", 0)
         self.addItem("CPD - Rigid", 1)
         self.addItem("CPD - Affine", 2)
         self.addItem("CPD - Deformable", 3)

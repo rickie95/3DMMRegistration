@@ -36,7 +36,7 @@ class MainWidget(QWidget):
 
         # Contenitore per i controlli
 
-    def loadTarget(self, path):
+    def load_target(self, path):
         path_bnd = path[0:len(path)-3] + "bnd"
         path_png = path[0:len(path)-7] + "F2D.png"
         self.target_model = Model(path, path_bnd, path_png)
@@ -44,7 +44,7 @@ class MainWidget(QWidget):
         self.dx_widget.drawData()
         Logger.addRow(str("File loaded correctly: " + path))
 
-    def loadSource(self, path):
+    def load_source(self, path):
         path_bnd = path[0:len(path) - 3] + "bnd"
         path_png = path[0:len(path) - 7] + "F2D.png"
         self.source_model = Model(path, path_bnd, path_png)
@@ -52,11 +52,11 @@ class MainWidget(QWidget):
         self.sx_widget.drawData()
         Logger.addRow(str("File loaded correctly: " + path))
 
-    def saveTarget(self, filepath):
+    def save_target(self, filepath):
         self.dx_widget.model.saveModel(filepath)
         self.dx_widget.model.shootDisplacementMap(filepath[0:-3]+"png")
 
-    def restoreHighlight(self):
+    def restore_highlight(self):
         self.sx_widget.highlight_data([-1])
 
     def landmark_selected(self, colors):
@@ -72,15 +72,15 @@ class MainWidget(QWidget):
 
         if self.registration_thread is None and self.sx_widget.there_are_points_highlighted():
             self.parent().setStatus("Busy...")
-            self.registration_thread = Registration(method, self.sx_widget.model, self.target_model, percentage, self.registrateCallback, self.dx_widget.updatePlotCallback)
+            self.registration_thread = Registration(method, self.sx_widget.model, self.target_model, percentage, self.registrate_callback, self.dx_widget.updatePlotCallback)
             self.registration_thread.start()
 
-    def stopRegistrationThread(self):
+    def stop_registration_thread(self):
         if self.registration_thread is not None:
             Logger.addRow(str("Trying to stop registration thread..."))
             self.registration_thread.stop()
 
-    def registrateCallback(self, model):
+    def registrate_callback(self, model):
         Logger.addRow(str("Registration completed."))
         self.target_model = model
         self.target_model.bgImage = self.dx_widget.bgImage
@@ -92,8 +92,7 @@ class MainWidget(QWidget):
         self.toolbar.registBTN.setEnabled(True)
         self.toolbar.stopBTN.setEnabled(False)
 
-
-    def registrateBatchCallback(self):
+    def registrate_batch_callback(self):
         try:
             Logger.addRow(str("Registration completed."))
             self.registration_thread = None
@@ -111,7 +110,7 @@ class MainWidget(QWidget):
             self.parent().setStatus("Busy...")
 
             self.registration_thread = BatchRegistrationThread(self.sx_widget.model, filenames, percentage,
-                                                               self.registrateBatchCallback)
+                                                               self.registrate_batch_callback)
             self.registration_thread.start()
 
     def savelog_onfile(self):

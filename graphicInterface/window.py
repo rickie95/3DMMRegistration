@@ -3,6 +3,7 @@ from graphicInterface.console import Logger
 from pointRegistration.registration_param import RegistrationParameters
 from PyQt5.QtGui import QIcon
 
+
 class Window(QMainWindow):
 
     def __init__(self):
