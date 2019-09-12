@@ -21,9 +21,9 @@ class PlotInteractiveFigure(PlotFigure):
         self.RS = RectangleSelector(self.ax, self.square_select_callback, drawtype='box', useblit=True, button=[1, 3],
                                     minspanx=5, minspany=5, spancoords='pixels', interactive=True)
 
-    def loadModel(self, model):
+    def load_model(self, model):
         self.myTree = None
-        super().loadModel(model)
+        super().load_model(model)
 
     def selectNearestPixel(self, x_coord, y_coord):
         if self.myTree is None:  # calculate kdtree only if is needed
@@ -33,7 +33,7 @@ class PlotInteractiveFigure(PlotFigure):
         dist, index = self.myTree.query([[x_coord, y_coord]], k=1)
         if dist < 5:  # TODO: non sarebbe male normalizzare
             self.landmarks_colors[index[0]] = "y" if self.landmarks_colors[index[0]] == "r" else "r"
-            self.drawData()
+            self.draw_data()
             print(index)
             if self.parent() is not None:
                 self.parent().landmark_selected(self.landmarks_colors)

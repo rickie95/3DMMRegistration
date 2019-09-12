@@ -23,13 +23,13 @@ class Registration(Thread):
 
     def run(self):
         # Decimate points
-        # source = self.decimate(self.source_model.model_data, self.perc)
-        source = self.source_model.getRegistrationPoints()
-        target = self.decimate(self.target_model.model_data, self.perc)
+        source = self.source_model.get_registration_points()
+        target = Model.decimate(self.target_model.model_data, self.perc)
         Logger.addRow("Points decimated.")
         # Add landmarks data
         # source = np.concatenate((source, self.source_model.landmarks_3D), axis=0)
-        target = np.concatenate((target, self.target_model.landmarks_3D), axis=0)
+        if self.target_model.landmarks_3D is not None:
+            target = np.concatenate((target, self.target_model.landmarks_3D), axis=0)
         Logger.addRow("Landmarks added.")
 
         ps = RegistrationParameters().getParams()
@@ -51,22 +51,25 @@ class Registration(Thread):
 
         reg_time = time.time()
         try:
-            # Se si vuole visualizzare i progressi usare questa versione
-            # data, reg_param = reg.register(partial(self.drawCallback, ax=None))
-            data, reg_param = reg.register(partial(self.log, ax=None))
+            # Uncomment the following line if you want to see the progress in the widget
+            data, reg_param = reg.register(partial(self.drawCallback, ax=None))
+            # data, reg_param = reg.register(partial(self.log, ax=None))
 
             if self.method == 1:  # Transform the whole point set if CPD Rigid
-                model.setModelData(reg.transform_point_cloud(self.source_model.model_data))
+                model.set_model_data(reg.transform_point_cloud(self.source_model.model_data))
             else:
-                model.setModelData(data[0: target.shape[0] - self.target_model.landmarks_3D.shape[0]])
+                model.set_model_data(data[0: target.shape[0] - self.target_model.landmarks_3D.shape[0]])
 
             model.registration_params = reg_param
-            model.setLandmarks(data[target.shape[0] - self.target_model.landmarks_3D.shape[0] : data.shape[0]])
+            if self.target_model.landmarks_3D is not None:
+                model.set_landmarks(data[target.shape[0] - self.target_model.landmarks_3D.shape[0]: data.shape[0]])
+            else:
+                model.set_landmarks(None)
             model.filename = self.target_model.filename
             # model.centerData()
-            model.setDisplacementMap(displacementMap(model.model_data, self.target_model.model_data, 3))
+            model.set_displacement_map(displacementMap(model.model_data, self.target_model.model_data, 3))
         except Exception as ex:
-            Logger.addRow(str(ex))
+            Logger.addRow("Err: "+str(ex))
             model = self.target_model  # Fail safe: rimetto il model di partenza
         finally:
             Logger.addRow("Took "+str(round(time.time()-reg_time, 3))+"s.")
@@ -76,22 +79,7 @@ class Registration(Thread):
         self.should_stop = True
 
     def log(self, iteration, error, X, Y, ax):
-        sss = "Iteration #" + str(iteration) + " error: " + str(error)
-        Logger.addRow(sss)
+        row = "Iteration #" + str(iteration) + " error: " + str(error)
+        Logger.addRow(row)
         if self.should_stop:
             raise Exception("Registration has been stopped")
-
-    def decimate(self, old_array, perc):
-        if perc >= 100:
-            return old_array
-
-        le, _ = old_array.shape
-        useful_range = np.arange(le)
-        np.random.shuffle(useful_range)
-        limit = int(le / 100 * perc)
-        new_arr = np.empty((limit, 3))
-        rr = np.arange(limit)
-        for count in rr:
-            new_arr[count] = old_array[useful_range[count]]
-
-        return new_arr

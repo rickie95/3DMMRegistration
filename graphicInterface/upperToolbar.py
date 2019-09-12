@@ -136,7 +136,7 @@ class UpperToolbar(QWidget):
         dlg = QFileDialog()
         options = dlg.Options()
         options |= QFileDialog.DontUseNativeDialog
-        filters = "File MAT (*.mat);;File WRML (*.wrl)"
+        filters = "MAT File(*.mat);;WRML File (*.wrl);;OFF File (*.off)"
         if multiple_files:
             file_name, _ = dlg.getOpenFileNames(self, "Load a model", "", filters, "File WRML (*.wrl)", options=options)
         else:
