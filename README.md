@@ -9,7 +9,7 @@ Shape Registrator works with 3D model and supports **.mat** (Matlab) and **.wrl*
 ### Installation
 
 1. Clone repo.
-2. `pip install requirements.txt`
+2. `pip install -r requirements.txt`
 3. Run main.py
 
 ### Usage
