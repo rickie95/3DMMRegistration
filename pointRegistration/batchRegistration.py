@@ -57,7 +57,7 @@ class BatchRegistrationThread(Thread):
                 save_filename = "RIGID_REG_{0}_{1}_{2}_{3}_{4}.mat"
                 save_path = os.path.join("results", save_filename.format(now.day, now.month, now.year, now.hour,
                                                                          now.minute))
-                model.save_model(save_path)
+                model.save_model(save_path)  # fixme
                 model.shoot_displacement_map(save_path)
                 Logger.addRow("Took " + str(round(time.time() - reg_time, 3)) + "s.")
 

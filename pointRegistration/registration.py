@@ -11,23 +11,22 @@ import time
 
 class Registration(Thread):
 
-    def __init__(self, method, source_model, target_model, perc, callback, drawCallback):
+    def __init__(self, method, source_model, target_model, perc, callback, iteration_callback=None):
         Thread.__init__(self)
         self.method = method
         self.source_model = source_model
         self.target_model = target_model
-        self.perc = perc
+        self.percentage = perc
         self.callback = callback
-        self.drawCallback = drawCallback
         self.should_stop = False
+        self.iteration_callback = iteration_callback
+        self.registration_method = None
 
     def run(self):
         # Decimate points
         source = self.source_model.get_registration_points()
-        target = Model.decimate(self.target_model.model_data, self.perc)
+        target = Model.decimate(self.target_model.model_data, self.percentage)
         Logger.addRow("Points decimated.")
-        # Add landmarks data
-        # source = np.concatenate((source, self.source_model.landmarks_3D), axis=0)
         if self.target_model.landmarks_3D is not None:
             target = np.concatenate((target, self.target_model.landmarks_3D), axis=0)
         Logger.addRow("Landmarks added.")
@@ -35,51 +34,70 @@ class Registration(Thread):
         ps = RegistrationParameters().getParams()
 
         if self.method == 1:  # CPD - RIGID
-            reg = rigid_registration(**{'X': source, 'Y': target, 'sigma2': ps['sigma2'],
-                                        'max_iterations': ps['max_iterations'], 'tolerance': ps['tolerance'],
-                                        'w': ps['w']})
-            meth = "CPD Rigid"
-        else:
-            Logger.addRow("Method not supported. Don't worry, I'm gonna use CPD rigid and save the day.")
-            reg = rigid_registration(**{'X': source, 'Y': target, 'sigma2': ps['sigma2'],
-                                        'max_iterations': ps['max_iterations'], 'tolerance': ps['tolerance'],
-                                        'w': ps['w']})
-            meth = "CPD Rigid"
+            self.registration_method = rigid_registration(**{'X': source, 'Y': target, 'sigma2': ps['sigma2'],
+                                                             'max_iterations': ps['max_iterations'],
+                                                             'tolerance': ps['tolerance'], 'w': ps['w']})
+            method = "CPD Rigid"
+        if self.method == 2:  # CPD - AFFINE
+            self.registration_method = affine_registration(**{'X': source, 'Y': target, 'sigma2': ps['sigma2'],
+                                                              'max_iterations': ps['max_iterations'],
+                                                              'tolerance': ps['tolerance'], 'w': ps['w']})
+            method = "CPD Affine"
+        if self.method == 3:  # CPD - DEFORMABLE
+            self.registration_method = deformable_registration(**{'X': source, 'Y': target, 'sigma2': ps['sigma2'],
+                                                                  'max_iterations': ps['max_iterations'],
+                                                                  'tolerance': ps['tolerance'], 'w': ps['w']})
+            method = "CPD Deformable"
 
-        Logger.addRow("Starting registration with " + meth + ", using " + str(self.perc) + "% of points.")
+        Logger.addRow("Starting registration with " + method + ", using " + str(self.percentage) + "% of points.")
         model = Model()
-
         reg_time = time.time()
+
         try:
-            # Uncomment the following line if you want to see the progress in the widget
-            data, reg_param = reg.register(partial(self.drawCallback, ax=None))
-            # data, reg_param = reg.register(partial(self.log, ax=None))
-
-            if self.method == 1:  # Transform the whole point set if CPD Rigid
-                model.set_model_data(reg.transform_point_cloud(self.source_model.model_data))
-            else:
-                model.set_model_data(data[0: target.shape[0] - self.target_model.landmarks_3D.shape[0]])
-
-            model.registration_params = reg_param
-            if self.target_model.landmarks_3D is not None:
-                model.set_landmarks(data[target.shape[0] - self.target_model.landmarks_3D.shape[0]: data.shape[0]])
-            else:
-                model.set_landmarks(None)
-            model.filename = self.target_model.filename
-            # model.centerData()
-            model.set_displacement_map(displacementMap(model.model_data, self.target_model.model_data, 3))
+            self.registration_method.register(partial(self.interruptable_wrapper, ax=None))
+            model = self.aligned_model(model)
+        except InterruptedException as ex:
+            Logger.addRow(str(ex))
+            model = self.aligned_model(model)
         except Exception as ex:
-            Logger.addRow("Err: "+str(ex))
-            model = self.target_model  # Fail safe: rimetto il model di partenza
+            Logger.addRow("Err: " + str(ex))
+            model = self.target_model  # Fail: back with the original target model
         finally:
             Logger.addRow("Took "+str(round(time.time()-reg_time, 3))+"s.")
             self.callback(model)
 
+    def aligned_model(self, model):
+        model.registration_params = self.registration_method.get_registration_parameters()
+        if self.target_model.landmarks_3D is not None:
+            points = self.registration_method.transform_point_cloud(self.source_model.model_data)
+            landmarks = self.registration_method.transform_point_cloud(self.source_model.landmarks_3D)
+        else:
+            points = self.registration_method.transform_point_cloud(self.source_model.model_data)
+            landmarks = None
+
+        model.set_model_data(points)
+        model.set_landmarks(landmarks)
+        model.filename = self.target_model.filename
+
+        model.set_displacement_map(displacementMap(model, self.target_model, 3))
+        return model
+
     def stop(self):
         self.should_stop = True
 
-    def log(self, iteration, error, X, Y, ax):
+    def log(self, iteration, error):
         row = "Iteration #" + str(iteration) + " error: " + str(error)
         Logger.addRow(row)
+
+    def interruptable_wrapper(self, **kwargs):
         if self.should_stop:
-            raise Exception("Registration has been stopped")
+            raise InterruptedException("Registration has been stopped")
+
+        if self.iteration_callback is None:
+            self.log(**kwargs)
+        else:
+            self.iteration_callback(**kwargs)
+
+
+class InterruptedException(Exception):
+    pass

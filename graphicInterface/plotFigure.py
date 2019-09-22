@@ -37,7 +37,6 @@ class PlotFigure(FigureCanvas):
         self.drawDisplacement = False
 
     def load_data(self):
-        # self.ax.plot([0.2, 0.5], [0.2, 0.5])
         self.ax.scatter(self.model.model_data[:, 0], self.model.model_data[:, 1], s=0.5, c=self.data_colors)
 
     def load_landmarks(self):
@@ -48,6 +47,7 @@ class PlotFigure(FigureCanvas):
 
     def show_displacement(self):
         self.drawDisplacement = True if self.model.displacement_map is not None else False
+        self.draw_landmarks = False
 
     def draw_data(self):
         self.ax.cla()
@@ -56,26 +56,22 @@ class PlotFigure(FigureCanvas):
         if self.model is not None:
             a = self.model.rangeX/2
             b = self.model.rangeY/2
-            # print(a, b, a/b)
-            # ratio = a/b
             self.ax.set_xlim(-a*1.1, a*1.1)  # (-110, 110)
             self.ax.set_ylim(-b*1.1, b*1.1)  # (-100, 100)
+
             if not self.drawDisplacement:
                 self.load_data()
             else:
                 self.load_displacement()
+
             if self.draw_landmarks and self.model.landmarks_3D is not None:
                 self.load_landmarks()
+
             if self.bgImage is not None:
                 img = pyplot.imread(self.bgImage)
-                # SX DX BOTTOM UP
-                self.ax.imshow(img, extent=[-b*1.05, b*1.03, -b*1.03, b*1.05])
+                self.ax.imshow(img, extent=[-b*1.05, b*1.03, -b*1.03, b*1.05])  # SX DX BOTTOM UP
         self.draw()
         self.flush_events()
-
-    # def setModel(self, model):
-    #    self.model = model
-    #    self.bgImage = self.model.bgImage
 
     def select_area(self, x_coord, y_coord, width, height):
         x_data = self.model.model_data[:, 0]
@@ -84,13 +80,8 @@ class PlotFigure(FigureCanvas):
         x_ind = np.where((x_coord <= x_data) & (x_data <= x_coord + width))
         y_ind = np.where((y_coord <= y_data) & (y_data <= y_coord + height))
 
-        x_data = y_data = None
         ind = np.intersect1d(np.array(x_ind), np.array(y_ind), assume_unique=True)
-        x_ind = y_ind = None
-        self.highlight_data(ind)  # evidenzio i punti relativi agli indici
-
-        # if self.parent() is not None and self.title == "Source":
-        # self.parent().data_selected(x_coord, y_coord, width, height)
+        self.highlight_data(ind)
 
     def highlight_data(self, indices):
         if indices[0] != -1:

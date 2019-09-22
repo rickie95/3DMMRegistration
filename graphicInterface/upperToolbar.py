@@ -56,24 +56,29 @@ class UpperToolbar(QWidget):
         loadTargetBTN.clicked.connect(self.load_target)
         layoutGB2.addWidget(loadTargetBTN, 0, 1)
 
-        saveTargetBTN = QPushButton("Save Target")
-        saveTargetBTN.clicked.connect(self.save_target)
-        layoutGB2.addWidget(saveTargetBTN, 1, 1)
+        self.save_target_btn = QPushButton("Save Target")
+        self.save_target_btn.clicked.connect(self.save_target)
+        self.save_target_btn.setEnabled(False)
+        layoutGB2.addWidget(self.save_target_btn, 1, 1)
 
         batchBTN = QPushButton("Batch registration")
         batchBTN.clicked.connect(self.batch_reg)
         layoutGB2.addWidget(batchBTN, 0, 2)
 
-        save_logBTN = QPushButton("Save log on file")
-        save_logBTN.clicked.connect(self.savelog_onfile)
-        layoutGB2.addWidget(save_logBTN, 1, 2)
-
+        self.save_displacement_btn = QPushButton("Save displacement map")
+        self.save_displacement_btn.clicked.connect(self.save_displacement)
+        self.save_displacement_btn.setEnabled(False)
+        layoutGB2.addWidget(self.save_displacement_btn, 1, 2)
         #  LOGGER GROUP
+
         group3 = QGroupBox("Log")
         layoutGB3 = QGridLayout()
         group3.setLayout(layoutGB3)
 
+        save_logBTN = QPushButton("Save log on file")
+        save_logBTN.clicked.connect(self.savelog_onfile)
         layoutGB3.addWidget(Logger.instance)
+        layoutGB3.addWidget(save_logBTN)
 
         self.layout.addWidget(group1, 0, 0)
         self.layout.addWidget(group2, 0, 1)
@@ -92,6 +97,9 @@ class UpperToolbar(QWidget):
             self.stopBTN.setEnabled(True)
         except Exception as ex:
             print(ex)
+
+    def save_displacement(self):
+        self.parent.save_displacement_map()
 
     def savelog_onfile(self):
         self.parent.savelog_onfile()
@@ -146,14 +154,7 @@ class UpperToolbar(QWidget):
 
     @pyqtSlot()
     def save_target(self):
-        dlg = QFileDialog()
-        options = dlg.Options()
-        options |= dlg.DontUseNativeDialog
-        filters = "MAT File (*.mat);;File (*.*)"
-        filename, _ = dlg.getSaveFileName(self, None, "Save model", filter=filters, initialFilter="MAT File (*.mat)",
-                                          options=options)
-        if filename:
-            self.parent.save_target(filename)
+        self.parent.save_target()
 
 
 class RegistrationMethodsCombobox(QComboBox):

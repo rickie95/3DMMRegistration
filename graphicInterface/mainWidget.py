@@ -33,29 +33,22 @@ class MainWidget(QWidget):
         self.toolbar = UpperToolbar(self)
         grid_central.addWidget(self.toolbar, 0, 0, 1, 4)
         grid_central.setRowStretch(0, 1)
-        grid_central.setRowStretch(1, 10)
+        grid_central.setRowStretch(1, 30)
 
         # Contenitore per i controlli
 
     def load_target(self, path):
-        path_bnd = path[0:len(path)-3] + "bnd"
-        path_png = path[0:len(path)-7] + "F2D.png"
-        self.target_model = Model(path, path_bnd, path_png)
+        self.target_model = Model(path)
         self.dx_widget.load_model(self.target_model)
         self.dx_widget.draw_data()
         Logger.addRow(str("File loaded correctly: " + path))
+        self.toolbar.save_target_btn.setEnabled(True)
 
     def load_source(self, path):
-        path_bnd = path[0:len(path) - 3] + "bnd"
-        path_png = path[0:len(path) - 7] + "F2D.png"
-        self.source_model = Model(path, path_bnd, path_png)
+        self.source_model = Model(path)
         self.sx_widget.load_model(self.source_model)
         self.sx_widget.draw_data()
         Logger.addRow(str("File loaded correctly: " + path))
-
-    def save_target(self, filepath):
-        self.dx_widget.model.save_model(filepath)
-        self.dx_widget.model.shoot_displacement_map(filepath[0:-3] + "png")
 
     def restore_highlight(self):
         self.sx_widget.highlight_data([-1])
@@ -82,6 +75,38 @@ class MainWidget(QWidget):
             Logger.addRow(str("Trying to stop registration thread..."))
             self.registration_thread.stop()
 
+    def save_displacement_map(self):
+        filters = "Serialized Python Obj (*.pickle)"
+        filename = self.save_dialog(filters)
+        if filename is not None:
+            self.target_model.save_displacement_map(filename)
+
+    def save_target(self):
+        if self.target_model is None:
+            QMessageBox.critical(self, 'Error', "The source model was not registered yet.")
+            return
+
+        filters = "MAT File (*.mat);;OFF File (*.off);;"
+        filename = self.save_dialog(filters)
+        if filename is not None:
+            self.dx_widget.model.save_model(filename)
+
+    def save_dialog(self, filters):
+        dlg = QFileDialog()
+        options = dlg.Options()
+        options |= dlg.DontUseNativeDialog
+        filename, ext = dlg.getSaveFileName(self, None, "Save model", filter=filters, options=options)
+
+        if filename:
+            if ext.find(".off") >= 0 and filename.find(".off") < 0:
+                filename += ".off"
+            if ext.find(".mat") >= 0 and filename.find(".mat") < 0:
+                filename += ".mat"
+            if ext.find(".pickle") >= 0 and filename.find(".pickle") < 0:
+                filename += ".pickle"
+            return filename
+        return None
+
     def registrate_callback(self, model):
         Logger.addRow(str("Registration completed."))
         self.target_model = model
@@ -93,6 +118,7 @@ class MainWidget(QWidget):
         self.registration_thread = None
         self.toolbar.registBTN.setEnabled(True)
         self.toolbar.stopBTN.setEnabled(False)
+        self.toolbar.save_displacement_btn.setEnabled(True)
 
     def registrate_batch_callback(self):
         try:
@@ -115,5 +141,6 @@ class MainWidget(QWidget):
                                                                self.registrate_batch_callback)
             self.registration_thread.start()
 
-    def savelog_onfile(self):
+    @staticmethod
+    def savelog_onfile():
         Logger.save_log()
