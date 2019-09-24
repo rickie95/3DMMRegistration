@@ -58,7 +58,8 @@ class PlotFigure(FigureCanvas):
             b = self.model.rangeY/2
             self.ax.set_xlim(-a*1.1, a*1.1)  # (-110, 110)
             self.ax.set_ylim(-b*1.1, b*1.1)  # (-100, 100)
-
+            self.ax.set_xlabel('X axis')
+            self.ax.set_ylabel('Y axis')
             if not self.drawDisplacement:
                 self.load_data()
             else:
