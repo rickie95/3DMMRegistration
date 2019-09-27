@@ -1,4 +1,5 @@
 from graphicInterface.console import Logger
+from scipy.spatial.transform import Rotation
 from pointRegistration import file3D
 import matplotlib.pyplot as plt
 import numpy as np
@@ -83,6 +84,22 @@ class Model:
         plt.scatter(self.displacement_map[:, 0], self.displacement_map[:, 1], s=0.5)
         plt.savefig(str(filepath[0:-3]+"png"))
         plt.close()
+
+    def rotate(self, axis, theta):
+        theta = np.radians(theta)
+        cos_t = np.cos(theta)
+        sin_t = np.sin(theta)
+
+        if axis == 'x':
+            rotation_matrix = Rotation.from_quat([sin_t, 0, 0, cos_t])
+        if axis == 'y':
+            rotation_matrix = Rotation.from_quat([0, sin_t, 0, cos_t])
+        if axis == 'z':
+            rotation_matrix = Rotation.from_quat([0, 0, sin_t, cos_t])
+
+        self.model_data = rotation_matrix.apply(self.model_data)
+        if self.landmarks_3D is not None:
+            self.landmarks_3D = rotation_matrix.apply(self.landmarks_3D)
 
     def load_model(self, path_data):
         self.filename, self.file_extension = os.path.splitext(path_data)

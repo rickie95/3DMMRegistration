@@ -1,17 +1,13 @@
-from matplotlib import pyplot
-from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5.QtWidgets import QSizePolicy
+from matplotlib import pyplot
 import numpy as np
-import time
 
 
 class PlotFigure(FigureCanvas):
 
     def __init__(self, parent, model=None, landmarks=True, title=None):
-        # Creating figure and canvas
-        self.fig = Figure(figsize=(5,4), dpi=100)
-        self.ax = self.fig.add_subplot(111)
+        self.fig, self.ax = pyplot.subplots()
         self.title = title
         FigureCanvas.__init__(self, self.fig)
         FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -71,6 +67,7 @@ class PlotFigure(FigureCanvas):
             if self.bgImage is not None:
                 img = pyplot.imread(self.bgImage)
                 self.ax.imshow(img, extent=[-b*1.05, b*1.03, -b*1.03, b*1.05])  # SX DX BOTTOM UP
+
         self.draw()
         self.flush_events()
 
@@ -114,7 +111,6 @@ class PlotFigure(FigureCanvas):
         self.ax.scatter(Y[:, 0],  Y[:, 1], Y[:, 2], c='b')
         if self.bgImage is not None:
             img = pyplot.imread(self.bgImage)
-            # SX DX BOTTOM UP
             self.ax.imshow(img, extent=[-self.model.rangeY/2 * 1.05, self.model.rangeY/2 * 1.03,
                                         -self.model.rangeY/2 * 1.03, self.model.rangeY/2 * 1.05])
         try:
@@ -125,3 +121,4 @@ class PlotFigure(FigureCanvas):
             print(ex)
         self.draw()
         self.flush_events()
+

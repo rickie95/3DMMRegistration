@@ -1,13 +1,12 @@
 from graphicInterface.plotInteractiveFigure import PlotInteractiveFigure
 from pointRegistration.batchRegistration import BatchRegistrationThread
 from pointRegistration.registration import Registration
-from graphicInterface.plotFigure import PlotFigure
+from graphicInterface.rotatable_figure import RotatableFigure
 from graphicInterface.upperToolbar import *
 from graphicInterface.console import Logger
 from pointRegistration.model import Model
 from PyQt5.QtWidgets import QMessageBox
 import os
-import threading
 
 
 class MainWidget(QWidget):
@@ -16,16 +15,18 @@ class MainWidget(QWidget):
         Logger.addRow(str("Starting up.."))
         self.source_model = Model(os.path.join(".", "data", "avgModel_bh_1779_NE.mat"))
         self.target_model = None
-        self.initUI()
+        self.sx_widget = None
+        self.dx_widget = None
         self.registration_thread = None
+        self.toolbar = None
         Logger.addRow(str("Ready."))
+        self.initUI()
 
     def initUI(self):
-        # Griglia centrale con i due plot
         grid_central = QGridLayout(self)
         self.setLayout(grid_central)
         self.sx_widget = PlotInteractiveFigure(self, self.source_model, title="Source")
-        self.dx_widget = PlotFigure(self, None, title="Target")
+        self.dx_widget = RotatableFigure(self, None, title="Target")
         grid_central.addWidget(self.sx_widget, 1, 0, 1, 2)
         self.sx_widget.draw_data()
         grid_central.addWidget(self.dx_widget, 1, 2, 1, 2)
@@ -34,8 +35,6 @@ class MainWidget(QWidget):
         grid_central.addWidget(self.toolbar, 0, 0, 1, 4)
         grid_central.setRowStretch(0, 1)
         grid_central.setRowStretch(1, 30)
-
-        # Contenitore per i controlli
 
     def load_target(self, path):
         self.target_model = Model(path)
