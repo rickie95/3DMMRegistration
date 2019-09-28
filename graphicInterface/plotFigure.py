@@ -33,10 +33,18 @@ class PlotFigure(FigureCanvas):
         self.drawDisplacement = False
 
     def load_data(self):
-        self.ax.scatter(self.model.model_data[:, 0], self.model.model_data[:, 1], s=0.5, c=self.data_colors)
+        max_v = np.max(self.model.model_data[:, 2])
+        min_v = np.min(self.model.model_data[:, 2])
+        sizes = np.copy(self.model.model_data[:, 2])
+        self.sizes = ((sizes + np.abs(min_v)) / np.abs(max_v)) + 0.5
+        self.ax.scatter(self.model.model_data[:, 0], self.model.model_data[:, 1], self.sizes, c=self.data_colors)
 
     def load_landmarks(self):
-        self.ax.scatter(self.model.landmarks_3D[:, 0], self.model.landmarks_3D[:, 1], c=self.landmarks_colors)
+        max_v = np.max(self.model.landmarks_3D[:, 2])
+        min_v = np.min(self.model.landmarks_3D[:, 2])
+        sizes = np.copy(self.model.landmarks_3D[:, 2])
+        sizes = ((sizes + np.abs(min_v)) / np.abs(max_v)) + 0.5
+        self.ax.scatter(self.model.landmarks_3D[:, 0], self.model.landmarks_3D[:, 1], sizes, c=self.landmarks_colors)
 
     def load_displacement(self):
         self.ax.scatter(self.model.displacement_map[:, 0], self.model.displacement_map[:, 1], s=0.5)
@@ -108,7 +116,7 @@ class PlotFigure(FigureCanvas):
     def update_plot_callback(self, iteration, error, X, Y, ax):
         self.ax.cla()
         print(iteration, error)
-        self.ax.scatter(Y[:, 0],  Y[:, 1], Y[:, 2], c='b')
+        self.ax.scatter(Y[:, 0],  Y[:, 1], self.sizes, c='b')
         if self.bgImage is not None:
             img = pyplot.imread(self.bgImage)
             self.ax.imshow(img, extent=[-self.model.rangeY/2 * 1.05, self.model.rangeY/2 * 1.03,

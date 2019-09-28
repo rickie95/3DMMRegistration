@@ -34,7 +34,7 @@ class Registration(Thread):
         ps = RegistrationParameters().getParams()
 
         if self.method == 1:  # CPD - RIGID
-            self.registration_method = rigid_registration(**{'X': source, 'Y': target, 'sigma2': ps['sigma2'],
+            self.registration_method = rigid_registration(**{'X': target, 'Y': source, 'sigma2': ps['sigma2'],
                                                              'max_iterations': ps['max_iterations'],
                                                              'tolerance': ps['tolerance'], 'w': ps['w']})
             method = "CPD Rigid"

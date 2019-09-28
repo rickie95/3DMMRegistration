@@ -115,7 +115,8 @@ class Model:
         if self.file_extension == ".wrl":
             self.set_model_data(file3D.load_wrml(path_data))
             self.landmarks_3D = file3D.load_bnd(self.filename + ".bnd")
-            self.bgImage = self.filename[:-3] + "F2D.png"
+            if self.bgImage is not None and os.path.exists(self.bgImage):
+                self.bgImage = self.filename[:-3] + "F2D.png"
 
         if self.file_extension == ".off":
             self.set_model_data(file3D.load_off(path_data))
