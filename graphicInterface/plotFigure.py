@@ -54,7 +54,7 @@ class PlotFigure(FigureCanvas):
     def load_image(self):
         if self.bgImage is not None:
             img = pyplot.imread(self.bgImage)
-            self.ax.imshow(img, extent=[-self.b * 1.05, self.b * 1.03, -self.b * 1.03, self.b * 1.05])  # SX DX BOTTOM UP
+            self.ax.imshow(img, extent=[-self.b * 1.05, self.b * 1.03, -self.b * 1.03, self.b * 1.05]) # SX DX BOTTOM UP
 
     def show_displacement(self):
         self.drawDisplacement = True if self.model.displacement_map is not None else False
@@ -83,6 +83,7 @@ class PlotFigure(FigureCanvas):
         self.flush_events()
 
     def restore_model(self):
+        self.ax.cla()
         self.load_data()
         self.load_landmarks()
         self.load_image()
