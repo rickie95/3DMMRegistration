@@ -23,7 +23,6 @@ class Registration(Thread):
         self.registration_method = None
 
     def run(self):
-        # Decimate points
         source = self.source_model.get_registration_points()
         target = Model.decimate(self.target_model.model_data, self.percentage)
         Logger.addRow("Points decimated.")
@@ -39,12 +38,12 @@ class Registration(Thread):
                                                              'tolerance': ps['tolerance'], 'w': ps['w']})
             method = "CPD Rigid"
         if self.method == 2:  # CPD - AFFINE
-            self.registration_method = affine_registration(**{'X': source, 'Y': target, 'sigma2': ps['sigma2'],
+            self.registration_method = affine_registration(**{'X': target, 'Y': source, 'sigma2': ps['sigma2'],
                                                               'max_iterations': ps['max_iterations'],
                                                               'tolerance': ps['tolerance'], 'w': ps['w']})
             method = "CPD Affine"
         if self.method == 3:  # CPD - DEFORMABLE
-            self.registration_method = deformable_registration(**{'X': source, 'Y': target, 'sigma2': ps['sigma2'],
+            self.registration_method = deformable_registration(**{'X': target, 'Y': source, 'sigma2': ps['sigma2'],
                                                                   'max_iterations': ps['max_iterations'],
                                                                   'tolerance': ps['tolerance'], 'w': ps['w']})
             method = "CPD Deformable"
@@ -67,6 +66,13 @@ class Registration(Thread):
             self.callback(model)
 
     def aligned_model(self, model):
+        """
+            Transforms all data points and landmarks of source model, applying the transformation obtained during the
+            registration phase.
+        :param model: A initialized and empty Model object
+        :return: The input model, filled with transformed data points, landmarks, filename, registration parameters
+            and displacement map oomputed between transformed source and target.
+        """
         model.registration_params = self.registration_method.get_registration_parameters()
         if self.target_model.landmarks_3D is not None:
             points = self.registration_method.transform_point_cloud(self.source_model.model_data)

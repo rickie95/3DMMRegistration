@@ -19,12 +19,12 @@ class PlotInteractiveFigure(PlotFigure):
         super().load_model(model)
 
     def select_nearest_pixel(self, x_coord, y_coord):
-        if self.myTree is None:  # calculate kdtree only if is needed
+        if self.myTree is None:
             print("Calculating 2DTree...")
             self.myTree = spatial.cKDTree(self.model.landmarks_3D[:, 0:2])  # costruisce il KDTree con i punti del Model
 
         dist, index = self.myTree.query([[x_coord, y_coord]], k=1)
-        if dist < 5:  # fixme: there should be some normalization mechanism
+        if dist < 5:
             self.landmarks_colors[index[0]] = "y" if self.landmarks_colors[index[0]] == "r" else "r"
             self.draw_data()
             print(index)

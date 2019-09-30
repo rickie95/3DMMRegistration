@@ -52,6 +52,9 @@ class MainWidget(QWidget):
     def restore_highlight(self):
         self.sx_widget.highlight_data([-1])
 
+    def restore_target(self):
+        self.dx_widget.restore_model()
+
     def landmark_selected(self, colors):
         self.dx_widget.set_landmarks_colors(colors)
 

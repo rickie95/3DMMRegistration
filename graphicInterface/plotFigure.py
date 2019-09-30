@@ -1,4 +1,5 @@
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from graphicInterface.console import suppress_stdout_stderr
 from PyQt5.QtWidgets import QSizePolicy
 from matplotlib import pyplot
 import numpy as np
@@ -40,14 +41,20 @@ class PlotFigure(FigureCanvas):
         self.ax.scatter(self.model.model_data[:, 0], self.model.model_data[:, 1], self.sizes, c=self.data_colors)
 
     def load_landmarks(self):
-        max_v = np.max(self.model.landmarks_3D[:, 2])
-        min_v = np.min(self.model.landmarks_3D[:, 2])
-        sizes = np.copy(self.model.landmarks_3D[:, 2])
-        sizes = ((sizes + np.abs(min_v)) / np.abs(max_v)) + 0.5
-        self.ax.scatter(self.model.landmarks_3D[:, 0], self.model.landmarks_3D[:, 1], sizes, c=self.landmarks_colors)
+        if self.draw_landmarks and self.model.landmarks_3D is not None:
+            max_v = np.max(self.model.landmarks_3D[:, 2])
+            min_v = np.min(self.model.landmarks_3D[:, 2])
+            sizes = np.copy(self.model.landmarks_3D[:, 2])
+            sizes = ((sizes + np.abs(min_v)) / np.abs(max_v)) + 0.5
+            self.ax.scatter(self.model.landmarks_3D[:, 0], self.model.landmarks_3D[:, 1], sizes, c=self.landmarks_colors)
 
     def load_displacement(self):
         self.ax.scatter(self.model.displacement_map[:, 0], self.model.displacement_map[:, 1], s=0.5)
+
+    def load_image(self):
+        if self.bgImage is not None:
+            img = pyplot.imread(self.bgImage)
+            self.ax.imshow(img, extent=[-self.b * 1.05, self.b * 1.03, -self.b * 1.03, self.b * 1.05])  # SX DX BOTTOM UP
 
     def show_displacement(self):
         self.drawDisplacement = True if self.model.displacement_map is not None else False
@@ -58,10 +65,10 @@ class PlotFigure(FigureCanvas):
         if self.title is not None:
             self.ax.set_title(self.title)
         if self.model is not None:
-            a = self.model.rangeX/2
-            b = self.model.rangeY/2
-            self.ax.set_xlim(-a*1.1, a*1.1)  # (-110, 110)
-            self.ax.set_ylim(-b*1.1, b*1.1)  # (-100, 100)
+            self.a = self.model.rangeX / 2
+            self.b = self.model.rangeY / 2
+            self.ax.set_xlim(-self.a * 1.1, self.a * 1.1)  # (-110, 110)
+            self.ax.set_ylim(-self.b * 1.1, self.b * 1.1)  # (-100, 100)
             self.ax.set_xlabel('X axis')
             self.ax.set_ylabel('Y axis')
             if not self.drawDisplacement:
@@ -69,13 +76,16 @@ class PlotFigure(FigureCanvas):
             else:
                 self.load_displacement()
 
-            if self.draw_landmarks and self.model.landmarks_3D is not None:
-                self.load_landmarks()
+            self.load_landmarks()
+            self.load_image()
 
-            if self.bgImage is not None:
-                img = pyplot.imread(self.bgImage)
-                self.ax.imshow(img, extent=[-b*1.05, b*1.03, -b*1.03, b*1.05])  # SX DX BOTTOM UP
+        self.draw()
+        self.flush_events()
 
+    def restore_model(self):
+        self.load_data()
+        self.load_landmarks()
+        self.load_image()
         self.draw()
         self.flush_events()
 
@@ -127,6 +137,7 @@ class PlotFigure(FigureCanvas):
                          fontsize='x-large')
         except Exception as ex:
             print(ex)
-        self.draw()
+        with suppress_stdout_stderr():
+            self.draw()
         self.flush_events()
 

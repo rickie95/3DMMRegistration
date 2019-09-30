@@ -9,5 +9,6 @@ class RotatableFigure(PlotFigure):
         PlotButtonCollection(self.rotate, self)
 
     def rotate(self, axis, theta):
-        self.model.rotate(axis, theta)
-        self.draw_data()
+        if self.model is not None:
+            self.model.rotate(axis, theta)
+            self.draw_data()

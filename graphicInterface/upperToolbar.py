@@ -111,6 +111,7 @@ class UpperToolbar(QWidget):
 
     def restore(self):
         self.parent.restore_highlight()
+        self.parent.restore_target()
 
     @pyqtSlot()
     def batch_reg(self):

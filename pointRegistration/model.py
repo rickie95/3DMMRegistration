@@ -57,7 +57,7 @@ class Model:
         if reg_points[0] == -1:
             self.registration_points = np.empty((0, 3))
 
-        self.registration_points = np.append(self.registration_points, reg_points)
+        self.registration_points = np.unique(np.append(self.registration_points, reg_points))
 
     def get_registration_points(self):
         self.registration_points = np.unique(self.registration_points)
