@@ -1,4 +1,4 @@
-from graphicInterface.mainWidget import *
+from graphicInterface.main_widget import *
 from graphicInterface.console import Logger
 from pointRegistration.registration_param import RegistrationParameters
 from PyQt5.QtGui import QIcon

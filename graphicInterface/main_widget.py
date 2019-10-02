@@ -1,8 +1,8 @@
-from graphicInterface.plotInteractiveFigure import PlotInteractiveFigure
+from graphicInterface.plot_interactive_figure import PlotInteractiveFigure
 from pointRegistration.batchRegistration import BatchRegistrationThread
 from pointRegistration.registration import Registration
 from graphicInterface.rotatable_figure import RotatableFigure
-from graphicInterface.upperToolbar import *
+from graphicInterface.upper_toolbar import *
 from graphicInterface.console import Logger
 from pointRegistration.model import Model
 from PyQt5.QtWidgets import QMessageBox
@@ -49,6 +49,12 @@ class MainWidget(QWidget):
         self.sx_widget.draw_data()
         Logger.addRow(str("File loaded correctly: " + path))
 
+    def restore(self):
+        self.restore_highlight()
+        if self.dx_widget.has_model():
+            self.restore_target()
+            self.toolbar.registBTN.setEnabled(True)
+
     def restore_highlight(self):
         self.sx_widget.highlight_data([-1])
 
@@ -66,7 +72,11 @@ class MainWidget(QWidget):
             QMessageBox.critical(self, 'Error', "No rigid points have been selected.")
             raise Exception("No rigid points selected")
 
-        if self.registration_thread is None and self.sx_widget.there_are_points_highlighted():
+        if self.dx_widget.model is None:
+            QMessageBox.critical(self, 'Error', "Please, load a target model.")
+            raise Exception("Target model is not present.")
+
+        if self.registration_thread is None:
             self.parent().setStatus("Busy...")
             self.registration_thread = Registration(method, self.sx_widget.model, self.target_model, percentage,
                                                     self.registrate_callback, self.dx_widget.update_plot_callback)
@@ -118,7 +128,6 @@ class MainWidget(QWidget):
         self.dx_widget.draw_data()
         self.parent().setStatusReady()
         self.registration_thread = None
-        self.toolbar.registBTN.setEnabled(True)
         self.toolbar.stopBTN.setEnabled(False)
         self.toolbar.save_displacement_btn.setEnabled(True)
 

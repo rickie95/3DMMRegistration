@@ -17,10 +17,11 @@ class PlotFigure(FigureCanvas):
         self.draw_landmarks = landmarks
         self.bgImage = None
         self.model = model
-        self.registration_points = np.empty((0, 0))
         self.drawDisplacement = False
         self.landmarks_colors = None
         self.data_colors = None
+        self.scale_width = None
+        self.scale_height = None
 
         if model is not None:
             self.load_model(model)
@@ -45,8 +46,9 @@ class PlotFigure(FigureCanvas):
             max_v = np.max(self.model.landmarks_3D[:, 2])
             min_v = np.min(self.model.landmarks_3D[:, 2])
             sizes = np.copy(self.model.landmarks_3D[:, 2])
-            sizes = ((sizes + np.abs(min_v)) / np.abs(max_v)) + 0.5
-            self.ax.scatter(self.model.landmarks_3D[:, 0], self.model.landmarks_3D[:, 1], sizes, c=self.landmarks_colors)
+            sizes = ((sizes + np.abs(min_v)) / np.abs(max_v))*5 + 0.5
+            self.ax.scatter(self.model.landmarks_3D[:, 0], self.model.landmarks_3D[:, 1], sizes,
+                            c=self.landmarks_colors)
 
     def load_displacement(self):
         self.ax.scatter(self.model.displacement_map[:, 0], self.model.displacement_map[:, 1], s=0.5)
@@ -54,7 +56,8 @@ class PlotFigure(FigureCanvas):
     def load_image(self):
         if self.bgImage is not None:
             img = pyplot.imread(self.bgImage)
-            self.ax.imshow(img, extent=[-self.b * 1.05, self.b * 1.03, -self.b * 1.03, self.b * 1.05])  # SX DX BOTTOM UP
+            self.ax.imshow(img, extent=[-self.scale_height * 1.05, self.scale_height * 1.03, -self.scale_height * 1.03,
+                                        self.scale_height * 1.05])  # SX DX BOTTOM UP
 
     def show_displacement(self):
         self.drawDisplacement = True if self.model.displacement_map is not None else False
@@ -65,10 +68,10 @@ class PlotFigure(FigureCanvas):
         if self.title is not None:
             self.ax.set_title(self.title)
         if self.model is not None:
-            self.a = self.model.rangeX / 2
-            self.b = self.model.rangeY / 2
-            self.ax.set_xlim(-self.a * 1.1, self.a * 1.1)  # (-110, 110)
-            self.ax.set_ylim(-self.b * 1.1, self.b * 1.1)  # (-100, 100)
+            self.scale_width = self.model.rangeX / 2
+            self.scale_height = self.model.rangeY / 2
+            self.ax.set_xlim(-self.scale_width * 1.1, self.scale_width * 1.1)  # (-110, 110)
+            self.ax.set_ylim(-self.scale_height * 1.1, self.scale_height * 1.1)  # (-100, 100)
             self.ax.set_xlabel('X axis')
             self.ax.set_ylabel('Y axis')
             if not self.drawDisplacement:
@@ -83,6 +86,7 @@ class PlotFigure(FigureCanvas):
         self.flush_events()
 
     def restore_model(self):
+        self.ax.cla()
         self.load_data()
         self.load_landmarks()
         self.load_image()
@@ -106,7 +110,7 @@ class PlotFigure(FigureCanvas):
             self.draw_data()
         else:
             self.data_colors[list(range(self.model.model_data.shape[0]))] = "b"
-            self.model.add_registration_points([-1])
+            self.model.init_registration_points()
             self.draw_data()
 
     def landmarks(self, l):
@@ -126,7 +130,7 @@ class PlotFigure(FigureCanvas):
     def update_plot_callback(self, iteration, error, X, Y, ax):
         self.ax.cla()
         print(iteration, error)
-        self.ax.scatter(Y[:, 0],  Y[:, 1], self.sizes, c='b')
+        self.ax.scatter(Y[:, 0], Y[:, 1], self.sizes, c='b')
         if self.bgImage is not None:
             img = pyplot.imread(self.bgImage)
             self.ax.imshow(img, extent=[-self.model.rangeY/2 * 1.05, self.model.rangeY/2 * 1.03,
@@ -140,4 +144,10 @@ class PlotFigure(FigureCanvas):
         with suppress_stdout_stderr():
             self.draw()
         self.flush_events()
+
+    def has_model(self):
+        if self.model is not None:
+            return True
+
+        return False
 

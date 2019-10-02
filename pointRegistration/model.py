@@ -21,7 +21,7 @@ class Model:
         """
 
         self.bgImage = None
-        self.registration_points = np.empty((0, 3), dtype=int)  # Contains indices
+        self.registration_points = None
         self.registration_params = None
         self.displacement_map = None
         self.landmarks_3D = None
@@ -55,13 +55,21 @@ class Model:
 
     def add_registration_points(self, reg_points):
         if reg_points[0] == -1:
-            self.registration_points = np.empty((0, 3))
+            self.registration_points = np.empty((0, 3), dtype=int)
 
         self.registration_points = np.unique(np.append(self.registration_points, reg_points))
+
+    def init_registration_points(self):
+        self.registration_points = np.empty((0, 3), dtype=int)
 
     def get_registration_points(self):
         self.registration_points = np.unique(self.registration_points)
         return np.array(self.model_data[self.registration_points])
+
+    def has_registration_points(self):
+        if self.registration_points.shape[0] > 0:
+            return True
+        return False
 
     def save_model(self, filepath):
         model = {"model_data": self.model_data}
@@ -126,6 +134,7 @@ class Model:
         if self.landmarks_3D is not None:
             row += " and " + str(self.landmarks_3D.shape[0]) + " landmarks."
 
+        self.init_registration_points()
         Logger.addRow(row)
 
     @staticmethod

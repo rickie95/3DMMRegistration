@@ -1,5 +1,5 @@
 from graphicInterface.plot_button_collection import PlotButtonCollection
-from graphicInterface.plotFigure import PlotFigure
+from graphicInterface.plot_figure import PlotFigure
 
 
 class RotatableFigure(PlotFigure):

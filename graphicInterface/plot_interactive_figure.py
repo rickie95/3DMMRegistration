@@ -1,5 +1,5 @@
 
-from graphicInterface.plotFigure import PlotFigure
+from graphicInterface.plot_figure import PlotFigure
 from matplotlib.widgets import RectangleSelector
 import matplotlib.patches as patches
 from scipy import spatial
@@ -27,7 +27,6 @@ class PlotInteractiveFigure(PlotFigure):
         if dist < 5:
             self.landmarks_colors[index[0]] = "y" if self.landmarks_colors[index[0]] == "r" else "r"
             self.draw_data()
-            print(index)
             if self.parent() is not None:
                 self.parent().landmark_selected(self.landmarks_colors)
 
@@ -42,7 +41,4 @@ class PlotInteractiveFigure(PlotFigure):
         self.draw()
 
     def there_are_points_highlighted(self):
-        if self.model.registration_points.shape[0] > 0:
-            return True
-
-        return False
+        return self.model.has_registration_points()
