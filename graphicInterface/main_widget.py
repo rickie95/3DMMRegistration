@@ -110,11 +110,11 @@ class MainWidget(QWidget):
         filename, ext = dlg.getSaveFileName(self, None, "Save model", filter=filters, options=options)
 
         if filename:
-            if ext.find(".off") >= 0 and filename.find(".off") < 0:
+            if ext.find(".off") >= 0 > filename.find(".off"):
                 filename += ".off"
-            if ext.find(".mat") >= 0 and filename.find(".mat") < 0:
+            if ext.find(".mat") >= 0 > filename.find(".mat"):
                 filename += ".mat"
-            if ext.find(".pickle") >= 0 and filename.find(".pickle") < 0:
+            if ext.find(".pickle") >= 0 > filename.find(".pickle"):
                 filename += ".pickle"
             return filename
         return None

@@ -94,14 +94,15 @@ class PlotFigure(FigureCanvas):
         self.flush_events()
 
     def select_area(self, x_coord, y_coord, width, height):
-        x_data = self.model.model_data[:, 0]
-        y_data = self.model.model_data[:, 1]
+        with suppress_stdout_stderr():
+            x_data = self.model.model_data[:, 0]
+            y_data = self.model.model_data[:, 1]
 
-        x_ind = np.where((x_coord <= x_data) & (x_data <= x_coord + width))
-        y_ind = np.where((y_coord <= y_data) & (y_data <= y_coord + height))
+            x_ind = np.where((x_coord <= x_data) & (x_data <= x_coord + width))
+            y_ind = np.where((y_coord <= y_data) & (y_data <= y_coord + height))
 
-        ind = np.intersect1d(np.array(x_ind), np.array(y_ind), assume_unique=True)
-        self.highlight_data(ind)
+            ind = np.intersect1d(np.array(x_ind), np.array(y_ind), assume_unique=True)
+            self.highlight_data(ind)
 
     def highlight_data(self, indices):
         if indices[0] != -1:
@@ -150,4 +151,3 @@ class PlotFigure(FigureCanvas):
             return True
 
         return False
-
