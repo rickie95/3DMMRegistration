@@ -128,7 +128,7 @@ class MainWidget(QWidget):
         self.dx_widget.draw_data()
         self.parent().setStatusReady()
         self.registration_thread = None
-        self.toolbar.stopBTN.setEnabled(False)
+        self.toolbar.stop_registration_button.setEnabled(False)
         self.toolbar.save_displacement_btn.setEnabled(True)
 
     def registrate_batch_callback(self):
