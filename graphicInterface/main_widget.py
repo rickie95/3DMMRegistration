@@ -53,7 +53,7 @@ class MainWidget(QWidget):
         self.restore_highlight()
         if self.dx_widget.has_model():
             self.restore_target()
-            self.toolbar.registBTN.setEnabled(True)
+            self.toolbar.start_registration_button.setEnabled(True)
 
     def restore_highlight(self):
         self.sx_widget.highlight_data([-1])

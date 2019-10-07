@@ -87,10 +87,7 @@ class PlotFigure(FigureCanvas):
 
     def restore_model(self):
         self.ax.cla()
-        self.load_data()
-        self.load_landmarks()
-        self.load_image()
-        self.draw()
+        self.draw_data()
         self.flush_events()
 
     def select_area(self, x_coord, y_coord, width, height):
