@@ -8,7 +8,7 @@ Shape Registrator works with 3D model and supports **.mat** (Matlab), **.wrl** (
 
 ## 2019 Update:
 - Displacement map can now be saved as a Pickle file.
-- Target model can be rotated, in order to provide a good starting point for CPD algorithm.coordinates
+- Target model can be rotated, in order to provide a good starting point for CPD algorithm.
 - Source model is now shown in the target section while registrated.
 
 ### Installation
