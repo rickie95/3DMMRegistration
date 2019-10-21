@@ -13,7 +13,6 @@ class Window(QMainWindow):
         self.statusLabel = QLabel("")
         self.initUI()
 
-
     def initUI(self):
         self.mainWidget = MainWidget(self)
         self.setCentralWidget(self.mainWidget)

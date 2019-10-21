@@ -1,4 +1,5 @@
 from graphicInterface.plot_interactive_figure import PlotInteractiveFigure
+from graphicInterface.show_displacement import DisplacementMapWindow
 from pointRegistration.batchRegistration import BatchRegistrationThread
 from pointRegistration.registration import Registration
 from graphicInterface.rotatable_figure import RotatableFigure
@@ -90,9 +91,7 @@ class MainWidget(QWidget):
             self.registration_thread.stop()
 
     def show_displacement_map(self):
-        self.save_displacement_map()
-        # todo: aprire una finestra con un widget co displacement map e bottone per salvarla
-        # aggiungere anche bottoni per ruotarla
+        DisplacementMapWindow(self.parent(), self.source_model.compute_displacement_map(self.target_model, 3))
 
     def save_displacement_map(self):
         filters = "Serialized Python Obj (*.pickle)"
@@ -130,8 +129,9 @@ class MainWidget(QWidget):
         Logger.addRow(str("Registration completed."))
         self.target_model = model
         self.target_model.bgImage = self.dx_widget.bgImage
+        self.dx_widget.clear()
         self.dx_widget.load_model(self.target_model)
-        self.dx_widget.load_data(self.source_model.model_data, 'r')
+        self.dx_widget.load_data(self.source_model.points, 'r')
         self.dx_widget.draw()
         self.parent().setStatusReady()
         self.registration_thread = None

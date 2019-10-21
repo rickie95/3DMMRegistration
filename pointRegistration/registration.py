@@ -1,4 +1,3 @@
-from pointRegistration.displacementMap import displacementMap
 from pointRegistration.registration_param import RegistrationParameters
 from pointRegistration.model import Model
 from graphicInterface.console import Logger
@@ -24,10 +23,10 @@ class Registration(Thread):
 
     def run(self):
         source = self.source_model.get_registration_points()
-        target = Model.decimate(self.target_model.model_data, self.percentage)
+        target = Model.decimate(self.target_model.points, self.percentage)
         Logger.addRow("Points decimated.")
-        if self.target_model.landmarks_3D is not None:
-            target = np.concatenate((target, self.target_model.landmarks_3D), axis=0)
+        if self.target_model.landmarks is not None:
+            target = np.concatenate((target, self.target_model.landmarks), axis=0)
         Logger.addRow("Landmarks added.")
 
         ps = RegistrationParameters().getParams()
@@ -74,18 +73,18 @@ class Registration(Thread):
             and displacement map oomputed between transformed source and target.
         """
         model.registration_params = self.registration_method.get_registration_parameters()
-        if self.target_model.landmarks_3D is not None:
-            points = self.registration_method.transform_point_cloud(self.source_model.model_data)
-            landmarks = self.registration_method.transform_point_cloud(self.source_model.landmarks_3D)
+        if self.target_model.points is not None:
+            points = self.registration_method.transform_point_cloud(self.source_model.points)
+            landmarks = self.registration_method.transform_point_cloud(self.source_model.points)
         else:
-            points = self.registration_method.transform_point_cloud(self.source_model.model_data)
+            points = self.registration_method.transform_point_cloud(self.source_model.points)
             landmarks = None
 
-        model.set_model_data(points)
+        model.set_points(points)
         model.set_landmarks(landmarks)
         model.filename = self.target_model.filename
 
-        model.set_displacement_map(displacementMap(model, self.target_model, 3))
+        # model.compute_displacement_map(self.target_model, 3)
         return model
 
     def stop(self):

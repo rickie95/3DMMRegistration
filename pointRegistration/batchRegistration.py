@@ -2,7 +2,6 @@ import numpy as np
 from threading import Thread
 from graphicInterface.console import Logger
 from pycpd.rigid_registration import rigid_registration
-from pointRegistration.displacementMap import displacementMap
 from pointRegistration.model import Model
 from functools import partial
 import time
@@ -29,10 +28,10 @@ class BatchRegistrationThread(Thread):
                 Logger.addRow("Batch %d of %d:" % (self.target_list.index(targ) + 1, len(self.target_list)))
                 path_wrl = targ[0:len(targ) - 3] + "bnd"
                 t = Model(targ, path_wrl)
-                target = Model.decimate(t.model_data, self.perc)
+                target = Model.decimate(t.points, self.perc)
                 Logger.addRow("Points decimated.")
-                if t.landmarks_3D is not None:
-                    target = np.concatenate((target, t.landmarks_3D), axis=0)
+                if t.landmarks is not None:
+                    target = np.concatenate((target, t.landmarks), axis=0)
                 reg = rigid_registration(**{'X': source, 'Y': target})
                 meth = "CPD Rigid"
 
@@ -45,14 +44,14 @@ class BatchRegistrationThread(Thread):
                 # data, reg_param = reg.register(partial(self.drawCallback, ax=None))
                 data, reg_param = reg.register(partial(self.log, ax=None))
 
-                model.set_model_data(reg.transform_point_cloud(self.source_model.model_data))
+                model.set_points(reg.transform_point_cloud(self.source_model.model_data))
 
                 model.registration_params = reg_param
-                if t.landmarks_3D is not None:
-                    model.set_landmarks(data[target.shape[0] - t.landmarks_3D.shape[0]: data.shape[0]])
+                if t.landmarks is not None:
+                    model.set_landmarks(data[target.shape[0] - t.landmarks.shape[0]: data.shape[0]])
                 model.filename = t.filename
                 # model.centerData()
-                model.set_displacement_map(displacementMap(model.model_data, t.model_data, 3))
+                model.compute_displacement_map(target, 3)
                 now = datetime.datetime.now()
                 save_filename = "RIGID_REG_{0}_{1}_{2}_{3}_{4}.mat"
                 save_path = os.path.join("results", save_filename.format(now.day, now.month, now.year, now.hour,

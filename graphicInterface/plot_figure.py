@@ -29,30 +29,28 @@ class PlotFigure(FigureCanvas):
     def load_model(self, model):
         self.model = model
         self.bgImage = self.model.bgImage
-        if self.model.landmarks_3D is not None:
-            self.landmarks_colors = np.full(self.model.landmarks_3D.shape[0], "r")
-        self.data_colors = np.full(self.model.model_data.shape[0], "b")
+        self.data_colors = np.full(self.model.points.shape[0], "b")
         self.drawDisplacement = False
 
-    def load_data(self, data=None, colour=None):
-        if colour is None:
-            colour = self.data_colors
+    def load_data(self, data=None, color=None):
+        if color is None:
+            color = self.model.points_color
         if data is None:
-            data = self.model.model_data
+            data = self.model.points
         max_v = np.max(data[:, 2])
         min_v = np.min(data[:, 2])
         sizes = np.copy(data[:, 2])
         self.sizes = ((sizes + np.abs(min_v)) / np.abs(max_v)) + 0.5
-        self.ax.scatter(data[:, 0], data[:, 1], self.sizes, c=colour)
+        self.ax.scatter(data[:, 0], data[:, 1], self.sizes, c=color)
 
     def load_landmarks(self):
-        if self.draw_landmarks and self.model.landmarks_3D is not None:
-            max_v = np.max(self.model.landmarks_3D[:, 2])
-            min_v = np.min(self.model.landmarks_3D[:, 2])
-            sizes = np.copy(self.model.landmarks_3D[:, 2])
+        if self.draw_landmarks and self.model.landmarks is not None:
+            max_v = np.max(self.model.landmarks[:, 2])
+            min_v = np.min(self.model.landmarks[:, 2])
+            sizes = np.copy(self.model.landmarks[:, 2])
             sizes = ((sizes + np.abs(min_v)) / np.abs(max_v))*5 + 0.5
-            self.ax.scatter(self.model.landmarks_3D[:, 0], self.model.landmarks_3D[:, 1], sizes,
-                            c=self.landmarks_colors)
+            self.ax.scatter(self.model.landmarks[:, 0], self.model.landmarks[:, 1], sizes,
+                            c=self.model.landmarks_color)
 
     def load_displacement(self):
         self.ax.scatter(self.model.displacement_map[:, 0], self.model.displacement_map[:, 1], s=0.5)
@@ -71,7 +69,6 @@ class PlotFigure(FigureCanvas):
         self.ax.cla()
 
     def draw_data(self):
-        #self.ax.cla()
         if self.title is not None:
             self.ax.set_title(self.title)
         if self.model is not None:
@@ -104,8 +101,8 @@ class PlotFigure(FigureCanvas):
 
     def select_area(self, x_coord, y_coord, width, height):
         with suppress_stdout_stderr():
-            x_data = self.model.model_data[:, 0]
-            y_data = self.model.model_data[:, 1]
+            x_data = self.model.points[:, 0]
+            y_data = self.model.points[:, 1]
 
             x_ind = np.where((x_coord <= x_data) & (x_data <= x_coord + width))
             y_ind = np.where((y_coord <= y_data) & (y_data <= y_coord + height))
@@ -119,7 +116,7 @@ class PlotFigure(FigureCanvas):
             self.model.add_registration_points(indices)
             self.draw_data()
         else:
-            self.data_colors[list(range(self.model.model_data.shape[0]))] = "b"
+            self.data_colors[list(range(self.model.points.shape[0]))] = "b"
             self.model.init_registration_points()
             self.draw_data()
 
@@ -140,8 +137,8 @@ class PlotFigure(FigureCanvas):
     def update_plot_callback(self, iteration, error, X, Y, ax):
         self.ax.cla()
         print(iteration, error)
-        self.ax.scatter(Y[:, 0], Y[:, 1], self.sizes, c='b')
-        self.ax.scatter(X[:, 0], X[:, 1], 0.5, c='r')
+        self.ax.scatter(Y[:, 0], Y[:, 1], self.sizes, c='r')
+        self.ax.scatter(X[:, 0], X[:, 1], 0.5, c='b')
         if self.bgImage is not None:
             img = pyplot.imread(self.bgImage)
             self.ax.imshow(img, extent=[-self.model.rangeY/2 * 1.05, self.model.rangeY/2 * 1.03,

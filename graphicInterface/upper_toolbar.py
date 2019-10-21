@@ -1,5 +1,6 @@
 from PyQt5.Qt import *
 from graphicInterface.console import Logger
+from graphicInterface.upper_toolbar_controls import *
 
 
 class UpperToolbar(QWidget):
@@ -21,23 +22,17 @@ class UpperToolbar(QWidget):
         self.registration_method_combobox = RegistrationMethodsCombobox()
         registration_group_layout.addWidget(self.registration_method_combobox, 0, 1)
 
-        self.start_registration_button = QPushButton("Register")
-        self.start_registration_button.clicked.connect(self.registrate)
-        self.start_registration_button.setEnabled(False)
+        self.start_registration_button = ControlPushButton("Register", self.registrate, False)
         registration_group_layout.addWidget(self.start_registration_button, 0, 2)
 
-        self.stop_registration_button = QPushButton("Stop")
-        self.stop_registration_button.clicked.connect(self.stop_registration)
-        self.stop_registration_button.setEnabled(False)
+        self.stop_registration_button = ControlPushButton("Stop", self.stop_registration, False)
         registration_group_layout.addWidget(self.stop_registration_button, 1, 2)
 
         point_percentage_label = QLabel("Percentage of points used:")
         point_percentage_label.setAlignment(Qt.AlignCenter)
         registration_group_layout.addWidget(point_percentage_label, 1, 0)
 
-        self.point_percentage_combobox = QComboBox()
-        for x in range(100, 20, -10):
-            self.point_percentage_combobox.addItem(str(x) + "%", x)
+        self.point_percentage_combobox = PercentageComboBox()
         registration_group_layout.addWidget(self.point_percentage_combobox, 1, 1)
 
         #  "Model" group
@@ -45,30 +40,16 @@ class UpperToolbar(QWidget):
         model_group_layout = QGridLayout()
         model_group.setLayout(model_group_layout)
 
-        load_source_btn = QPushButton("Load Source")
-        load_source_btn.clicked.connect(self.load_source)
-        model_group_layout.addWidget(load_source_btn, 0, 0)
+        model_group_layout.addWidget(ControlPushButton("Load Source", self.load_source, True), 0, 0)
+        model_group_layout.addWidget(ControlPushButton("Restore", self.restore, True), 1, 0)
+        model_group_layout.addWidget(ControlPushButton("Load Target", self.load_target, True), 0, 1)
 
-        restore_btn = QPushButton("Restore")
-        restore_btn.clicked.connect(self.restore)
-        model_group_layout.addWidget(restore_btn, 1, 0)
-
-        load_target_btn = QPushButton("Load Target")
-        load_target_btn.clicked.connect(self.load_target)
-        model_group_layout.addWidget(load_target_btn, 0, 1)
-
-        self.save_target_btn = QPushButton("Save Target")
-        self.save_target_btn.clicked.connect(self.save_target)
-        self.save_target_btn.setEnabled(False)
+        self.save_target_btn = ControlPushButton("Save Target", self.save_target, False)
         model_group_layout.addWidget(self.save_target_btn, 1, 1)
 
-        batch_btn = QPushButton("Batch registration")
-        batch_btn.clicked.connect(self.batch_reg)
-        model_group_layout.addWidget(batch_btn, 0, 2)
+        model_group_layout.addWidget(ControlPushButton("Batch registration", self.batch_reg, False), 0, 2)
 
-        self.show_displacement_btn = QPushButton("Show displacement map")
-        self.show_displacement_btn.clicked.connect(self.show_displacement)
-        self.show_displacement_btn.setEnabled(False)
+        self.show_displacement_btn = ControlPushButton("Show Displacement Map", self.show_displacement, True)
         model_group_layout.addWidget(self.show_displacement_btn, 1, 2)
 
         #  LOGGER GROUP
@@ -155,16 +136,3 @@ class UpperToolbar(QWidget):
     @pyqtSlot()
     def save_target(self):
         self.parent.save_target()
-
-
-class RegistrationMethodsCombobox(QComboBox):
-
-    def __init__(self):
-        super(RegistrationMethodsCombobox, self).__init__()
-        # self.addItem("ICP", 0)
-        self.addItem("CPD - Rigid", 1)
-        self.addItem("CPD - Affine", 2)
-        self.addItem("CPD - Deformable", 3)
-
-
-

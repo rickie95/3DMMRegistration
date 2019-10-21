@@ -1,12 +1,10 @@
 from graphicInterface.console import Logger
 from scipy.spatial.transform import Rotation
 from pointRegistration import file3D
-import matplotlib.pyplot as plt
 import numpy as np
 import h5py
 import ntpath
 import os
-import pickle  # Look Morty, I'm a pickle!
 
 
 class Model:
@@ -24,34 +22,35 @@ class Model:
         self.registration_points = None
         self.registration_params = None
         self.displacement_map = None
-        self.landmarks_3D = None
-        self.model_data = None
+        self.landmarks = None
+        self.landmarks_color = None
+        self.points = None
+        self.points_color = None
         self.rangeX = None
         self.rangeY = None
         self.filename = None
 
         if path_data is not None:
             self.load_model(path_data)
-            self.center_data()
+            self.center_model()
 
-    def center_data(self):
+    def center_model(self):
         # Not always scans are perfectly centered.
         # Median is not sensible to big extreme value clusters
-        points_median = np.median(self.model_data, axis=0)
-        self.model_data -= points_median
-        if self.landmarks_3D is not None:
-            self.landmarks_3D -= points_median
+        points_median = np.median(self.points, axis=0)
+        self.points -= points_median
+        if self.landmarks is not None:
+            self.landmarks -= points_median
 
-    def set_displacement_map(self, disp):
-        self.displacement_map = disp
-
-    def set_model_data(self, data):
-        self.model_data = data
-        self.rangeX = np.ptp(self.model_data[:, 0])
-        self.rangeY = np.ptp(self.model_data[:, 1])
+    def set_points(self, data):
+        self.points = data
+        self.rangeX = np.ptp(self.points[:, 0])
+        self.rangeY = np.ptp(self.points[:, 1])
+        self.points_color = ["b"] * data.shape[0]
 
     def set_landmarks(self, land):
-        self.landmarks_3D = land
+        self.landmarks = land
+        self.landmarks_color = ["r"] * self.landmarks.shape[0]
 
     def add_registration_points(self, reg_points):
         if reg_points[0] == -1:
@@ -64,7 +63,7 @@ class Model:
 
     def get_registration_points(self):
         self.registration_points = np.unique(self.registration_points)
-        return np.array(self.model_data[self.registration_points])
+        return np.array(self.points[self.registration_points])
 
     def has_registration_points(self):
         if self.registration_points.shape[0] > 0:
@@ -72,10 +71,10 @@ class Model:
         return False
 
     def save_model(self, filepath):
-        model = {"model_data": self.model_data}
+        model = {"model_data": self.points}
 
-        if self.landmarks_3D is not None:
-            model["landmarks3D"] = self.landmarks_3D
+        if self.landmarks is not None:
+            model["landmarks3D"] = self.landmarks
         if self.displacement_map is not None:
             model["displacement_map"] = self.displacement_map
         if self.registration_params is not None:
@@ -85,21 +84,18 @@ class Model:
         file3D.save_file(filepath, model)
         Logger.addRow(str("File saved: " + filepath))
 
-    def save_displacement_map(self, filename):
-        pickle.dump(self.displacement_map, open(filename, "wb"))
-
-    def shoot_displacement_map(self, filepath):
-        plt.scatter(self.displacement_map[:, 0], self.displacement_map[:, 1], s=0.5)
-        plt.savefig(str(filepath[0:-3]+"png"))
-        plt.close()
+    def compute_displacement_map(self, target_model, distance):
+        from pointRegistration.displacementMap import DisplacementMap
+        self.displacement_map = DisplacementMap(self, target_model, distance)
+        return self.displacement_map
 
     def rotate(self, axis, theta):
-        self.model_data = Model.rotate_data(axis, theta, self.model_data)
-        if self.landmarks_3D is not None:
-            self.landmarks_3D = Model.rotate_data(axis, theta, self.landmarks_3D)
+        self.points = Model.rotate_model(axis, theta, self.points)
+        if self.landmarks is not None:
+            self.landmarks = Model.rotate_model(axis, theta, self.landmarks)
 
     @staticmethod
-    def rotate_data(axis, theta, data):
+    def rotate_model(axis, theta, data):
         theta = np.radians(theta)
         cos_t = np.cos(theta)
         sin_t = np.sin(theta)
@@ -119,22 +115,22 @@ class Model:
 
         if self.file_extension == ".mat":
             file = h5py.File(path_data, 'r')
-            self.set_model_data(np.transpose(np.array(file["avgModel"])))
-            self.landmarks_3D = np.transpose(np.array(file["landmarks3D"]))
+            self.set_points(np.transpose(np.array(file["avgModel"])))
+            self.set_landmarks(np.transpose(np.array(file["landmarks3D"])))
 
         if self.file_extension == ".wrl":
-            self.set_model_data(file3D.load_wrml(path_data))
-            self.landmarks_3D = file3D.load_bnd(self.filename + ".bnd")
+            self.set_points(file3D.load_wrml(path_data))
+            self.set_landmarks(file3D.load_bnd(self.filename + ".bnd"))
             if self.bgImage is not None and os.path.exists(self.bgImage):
                 self.bgImage = self.filename[:-3] + "F2D.png"
 
         if self.file_extension == ".off":
-            self.set_model_data(file3D.load_off(path_data))
+            self.set_points(file3D.load_off(path_data))
 
-        row = "Model loaded: " + str(self.model_data.shape[0]) + " points"
+        row = "Model loaded: " + str(self.points.shape[0]) + " points"
 
-        if self.landmarks_3D is not None:
-            row += " and " + str(self.landmarks_3D.shape[0]) + " landmarks."
+        if self.landmarks is not None:
+            row += " and " + str(self.landmarks.shape[0]) + " landmarks."
 
         self.init_registration_points()
         Logger.addRow(row)

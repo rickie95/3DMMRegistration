@@ -7,7 +7,6 @@ class RotatableFigure(PlotFigure):
     def __init__(self, parent, model=None, landmarks=True, title=None):
         super().__init__(parent, model, landmarks, title)
         self.rotate_buttons = None
-        self.scatter = self.ax.scatter()
 
     def rotate(self, axis, theta, registered=False):
         if self.model is not None:
@@ -24,5 +23,5 @@ class RotatableFigure(PlotFigure):
 
     def rotate_view(self, axis, theta):
         data = self.scatter.get_offsets()
-        data = self.model.rotate_data(axis, theta, data)
+        data = self.model.rotate_model(axis, theta, data)
         self.load_data()
