@@ -14,38 +14,38 @@ class PlotButtonCollection(object):
         ax_zminus = pyplot.axes([0,   0.01, 0.09, 0.05])
         ax_zplus = pyplot.axes( [0.1, 0.01, 0.09, 0.05])
 
-        self.b_yplus = Button(ax_yplus, '+30°')
+        self.b_yplus = Button(ax_yplus, '+15°')
         self.b_yplus.on_clicked(self.rotate_y_plus)
 
-        self.b_yminus = Button(ax_yminus, 'Y -30°')
+        self.b_yminus = Button(ax_yminus, 'Y -15°')
         self.b_yminus.on_clicked(self.rotate_y_minus)
 
-        self.b_xplus = Button(ax_xplus, '+30°')
+        self.b_xplus = Button(ax_xplus, '+15°')
         self.b_xplus.on_clicked(self.rotate_x_plus)
 
-        self.b_xminus = Button(ax_xminus, 'X -30°')
+        self.b_xminus = Button(ax_xminus, 'X -15°')
         self.b_xminus.on_clicked(self.rotate_x_minus)
 
-        self.b_zminus = Button(ax_zminus, 'Z -30°')
+        self.b_zminus = Button(ax_zminus, 'Z -15°')
         self.b_zminus.on_clicked(self.rotate_z_minus)
 
-        self.b_zplus = Button(ax_zplus, '+30°')
+        self.b_zplus = Button(ax_zplus, '+15°')
         self.b_zplus.on_clicked(self.rotate_z_plus)
 
     def rotate_x_plus(self, event):
-        self.callback('x', 30)
+        self.callback('x', 15)
 
     def rotate_x_minus(self, event):
-        self.callback('x', -30)
+        self.callback('x', -15)
 
     def rotate_y_plus(self, event):
-        self.callback('y', 30)
+        self.callback('y', 15)
 
     def rotate_y_minus(self, event):
-        self.callback('y', -30)
+        self.callback('y', -15)
 
     def rotate_z_plus(self, event):
-        self.callback('z', +30)
+        self.callback('z', +15)
 
     def rotate_z_minus(self, event):
-        self.callback('z', -30)
+        self.callback('z', -15)

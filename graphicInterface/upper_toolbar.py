@@ -66,10 +66,10 @@ class UpperToolbar(QWidget):
         batch_btn.clicked.connect(self.batch_reg)
         model_group_layout.addWidget(batch_btn, 0, 2)
 
-        self.save_displacement_btn = QPushButton("Save displacement map")
-        self.save_displacement_btn.clicked.connect(self.save_displacement)
-        self.save_displacement_btn.setEnabled(False)
-        model_group_layout.addWidget(self.save_displacement_btn, 1, 2)
+        self.show_displacement_btn = QPushButton("Show displacement map")
+        self.show_displacement_btn.clicked.connect(self.show_displacement)
+        self.show_displacement_btn.setEnabled(False)
+        model_group_layout.addWidget(self.show_displacement_btn, 1, 2)
 
         #  LOGGER GROUP
         logger_group = QGroupBox("Log")
@@ -99,8 +99,8 @@ class UpperToolbar(QWidget):
         except Exception as ex:
             print(ex)
 
-    def save_displacement(self):
-        self.parent.save_displacement_map()
+    def show_displacement(self):
+        self.parent.show_displacement_map()
 
     def savelog_onfile(self):
         self.parent.savelog_onfile()

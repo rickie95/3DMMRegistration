@@ -26,7 +26,7 @@ class PlotInteractiveFigure(PlotFigure):
         dist, index = self.myTree.query([[x_coord, y_coord]], k=1)
         if dist < 5:
             self.landmarks_colors[index[0]] = "y" if self.landmarks_colors[index[0]] == "r" else "r"
-            self.draw_data()
+            self.draw()
             if self.parent() is not None:
                 self.parent().landmark_selected(self.landmarks_colors)
 

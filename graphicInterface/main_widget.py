@@ -19,6 +19,7 @@ class MainWidget(QWidget):
         self.dx_widget = None
         self.registration_thread = None
         self.toolbar = None
+        self.registrated = None
         Logger.addRow(str("Ready."))
         self.initUI()
 
@@ -28,9 +29,9 @@ class MainWidget(QWidget):
         self.sx_widget = PlotInteractiveFigure(self, self.source_model, title="Source")
         self.dx_widget = RotatableFigure(self, None, title="Target")
         grid_central.addWidget(self.sx_widget, 1, 0, 1, 2)
-        self.sx_widget.draw_data()
+        self.sx_widget.draw(clear=True)
         grid_central.addWidget(self.dx_widget, 1, 2, 1, 2)
-        self.dx_widget.draw_data()
+        self.dx_widget.draw(clear=True)
         self.toolbar = UpperToolbar(self)
         grid_central.addWidget(self.toolbar, 0, 0, 1, 4)
         grid_central.setRowStretch(0, 1)
@@ -39,14 +40,14 @@ class MainWidget(QWidget):
     def load_target(self, path):
         self.target_model = Model(path)
         self.dx_widget.load_model(self.target_model)
-        self.dx_widget.draw_data()
+        self.dx_widget.draw(clear=True)
         Logger.addRow(str("File loaded correctly: " + path))
         self.toolbar.save_target_btn.setEnabled(True)
 
     def load_source(self, path):
         self.source_model = Model(path)
         self.sx_widget.load_model(self.source_model)
-        self.sx_widget.draw_data()
+        self.sx_widget.draw()
         Logger.addRow(str("File loaded correctly: " + path))
 
     def restore(self):
@@ -79,13 +80,19 @@ class MainWidget(QWidget):
         if self.registration_thread is None:
             self.parent().setStatus("Busy...")
             self.registration_thread = Registration(method, self.sx_widget.model, self.target_model, percentage,
-                                                    self.registrate_callback, self.dx_widget.update_plot_callback)
+                                                    self.registration_completed_callback,
+                                                    self.dx_widget.update_plot_callback)
             self.registration_thread.start()
 
     def stop_registration_thread(self):
         if self.registration_thread is not None:
             Logger.addRow(str("Trying to stop registration thread..."))
             self.registration_thread.stop()
+
+    def show_displacement_map(self):
+        self.save_displacement_map()
+        # todo: aprire una finestra con un widget co displacement map e bottone per salvarla
+        # aggiungere anche bottoni per ruotarla
 
     def save_displacement_map(self):
         filters = "Serialized Python Obj (*.pickle)"
@@ -119,17 +126,19 @@ class MainWidget(QWidget):
             return filename
         return None
 
-    def registrate_callback(self, model):
+    def registration_completed_callback(self, model):
         Logger.addRow(str("Registration completed."))
         self.target_model = model
         self.target_model.bgImage = self.dx_widget.bgImage
         self.dx_widget.load_model(self.target_model)
-        self.dx_widget.show_displacement()
-        self.dx_widget.draw_data()
+        self.dx_widget.load_data(self.source_model.model_data, 'r')
+        self.dx_widget.draw()
         self.parent().setStatusReady()
         self.registration_thread = None
         self.toolbar.stop_registration_button.setEnabled(False)
-        self.toolbar.save_displacement_btn.setEnabled(True)
+        self.toolbar.show_displacement_btn.setEnabled(True)
+        self.registrated = True
+        # Target and Source are now plotted in target widget
 
     def registrate_batch_callback(self):
         try:

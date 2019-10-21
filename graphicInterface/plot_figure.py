@@ -34,12 +34,16 @@ class PlotFigure(FigureCanvas):
         self.data_colors = np.full(self.model.model_data.shape[0], "b")
         self.drawDisplacement = False
 
-    def load_data(self):
-        max_v = np.max(self.model.model_data[:, 2])
-        min_v = np.min(self.model.model_data[:, 2])
-        sizes = np.copy(self.model.model_data[:, 2])
+    def load_data(self, data=None, colour=None):
+        if colour is None:
+            colour = self.data_colors
+        if data is None:
+            data = self.model.model_data
+        max_v = np.max(data[:, 2])
+        min_v = np.min(data[:, 2])
+        sizes = np.copy(data[:, 2])
         self.sizes = ((sizes + np.abs(min_v)) / np.abs(max_v)) + 0.5
-        self.ax.scatter(self.model.model_data[:, 0], self.model.model_data[:, 1], self.sizes, c=self.data_colors)
+        self.ax.scatter(data[:, 0], data[:, 1], self.sizes, c=colour)
 
     def load_landmarks(self):
         if self.draw_landmarks and self.model.landmarks_3D is not None:
@@ -63,8 +67,11 @@ class PlotFigure(FigureCanvas):
         self.drawDisplacement = True if self.model.displacement_map is not None else False
         self.draw_landmarks = False
 
-    def draw_data(self):
+    def clear(self):
         self.ax.cla()
+
+    def draw_data(self):
+        #self.ax.cla()
         if self.title is not None:
             self.ax.set_title(self.title)
         if self.model is not None:
@@ -82,8 +89,13 @@ class PlotFigure(FigureCanvas):
             self.load_landmarks()
             self.load_image()
 
-        self.draw()
+        super().draw()
         self.flush_events()
+
+    def draw(self, clear=False):
+        if clear is True:
+            self.clear()
+        self.draw_data()
 
     def restore_model(self):
         self.ax.cla()
@@ -129,6 +141,7 @@ class PlotFigure(FigureCanvas):
         self.ax.cla()
         print(iteration, error)
         self.ax.scatter(Y[:, 0], Y[:, 1], self.sizes, c='b')
+        self.ax.scatter(X[:, 0], X[:, 1], 0.5, c='r')
         if self.bgImage is not None:
             img = pyplot.imread(self.bgImage)
             self.ax.imshow(img, extent=[-self.model.rangeY/2 * 1.05, self.model.rangeY/2 * 1.03,
@@ -140,7 +153,7 @@ class PlotFigure(FigureCanvas):
         except Exception as ex:
             print(ex)
         with suppress_stdout_stderr():
-            self.draw()
+            super().draw()
         self.flush_events()
 
     def has_model(self):
