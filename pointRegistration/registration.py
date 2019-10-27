@@ -75,7 +75,7 @@ class Registration(Thread):
         model.registration_params = self.registration_method.get_registration_parameters()
         if self.target_model.points is not None:
             points = self.registration_method.transform_point_cloud(self.source_model.points)
-            landmarks = self.registration_method.transform_point_cloud(self.source_model.points)
+            landmarks = self.registration_method.transform_point_cloud(self.source_model.landmarks)
         else:
             points = self.registration_method.transform_point_cloud(self.source_model.points)
             landmarks = None

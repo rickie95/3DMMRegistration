@@ -124,7 +124,8 @@ def load_off(file, faces_required=False):
         assert num_vertices > 0
 
         num_faces = int(parts[1])
-        assert num_faces > 0
+        if faces_required:
+            assert num_faces > 0
 
         vertices = []
         for i in range(num_vertices):

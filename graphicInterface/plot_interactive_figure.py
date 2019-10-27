@@ -1,9 +1,10 @@
-
-from graphicInterface.plot_figure import PlotFigure
-from matplotlib.widgets import RectangleSelector
 import matplotlib.patches as patches
-from scipy import spatial
 import numpy as np
+from matplotlib.widgets import RectangleSelector
+from scipy import spatial
+
+from graphicInterface.console import suppress_stdout_stderr
+from graphicInterface.plot_figure import PlotFigure
 
 
 class PlotInteractiveFigure(PlotFigure):
@@ -42,3 +43,22 @@ class PlotInteractiveFigure(PlotFigure):
 
     def there_are_points_highlighted(self):
         return self.model.has_registration_points()
+
+    def select_area(self, x_coord, y_coord, width, height):
+        with suppress_stdout_stderr():
+            x_data = self.model.points[:, 0]
+            y_data = self.model.points[:, 1]
+
+            x_ind = np.where((x_coord <= x_data) & (x_data <= x_coord + width))
+            y_ind = np.where((y_coord <= y_data) & (y_data <= y_coord + height))
+
+            ind = np.intersect1d(np.array(x_ind), np.array(y_ind), assume_unique=True)
+            self.highlight_data(ind)
+
+    def highlight_data(self, indices):
+        if indices[0] != -1:
+            self.model.add_registration_points(indices)
+            self.draw_data()
+        else:
+            self.model.init_registration_points()
+            self.draw_data()

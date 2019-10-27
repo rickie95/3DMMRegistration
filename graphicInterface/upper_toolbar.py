@@ -1,6 +1,8 @@
+from graphicInterface.file_dialogs import *
 from PyQt5.Qt import *
 from graphicInterface.console import Logger
 from graphicInterface.upper_toolbar_controls import *
+
 
 
 class UpperToolbar(QWidget):
@@ -22,13 +24,13 @@ class UpperToolbar(QWidget):
         self.registration_method_combobox = RegistrationMethodsCombobox()
         registration_group_layout.addWidget(self.registration_method_combobox, 0, 1)
 
-        self.start_registration_button = ControlPushButton("Register", self.registrate, False)
+        self.start_registration_button = ControlPushButton("Start Registration", self.registrate, False)
         registration_group_layout.addWidget(self.start_registration_button, 0, 2)
 
         self.stop_registration_button = ControlPushButton("Stop", self.stop_registration, False)
         registration_group_layout.addWidget(self.stop_registration_button, 1, 2)
 
-        point_percentage_label = QLabel("Percentage of points used:")
+        point_percentage_label = QLabel("Target's points used:")
         point_percentage_label.setAlignment(Qt.AlignCenter)
         registration_group_layout.addWidget(point_percentage_label, 1, 0)
 
@@ -108,30 +110,11 @@ class UpperToolbar(QWidget):
 
     @pyqtSlot()
     def load_target(self):
-        file_name = self.load_file()
-
-        if file_name:
-            self.parent.load_target(file_name)
-            self.start_registration_button.setEnabled(True)
+        self.parent.load_target()
 
     @pyqtSlot()
     def load_source(self):
-        file_name = self.load_file()
-        if file_name:
-            self.parent.load_source(file_name)
-            self.start_registration_button.setEnabled(True)
-
-    def load_file(self, multiple_files=False):
-        dlg = QFileDialog()
-        options = dlg.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        filters = "MAT File(*.mat);;WRML File (*.wrl);;OFF File (*.off)"
-        if multiple_files:
-            file_name, _ = dlg.getOpenFileNames(self, "Load a model", "", filters, "File WRML (*.wrl)", options=options)
-        else:
-            file_name, _ = dlg.getOpenFileName(self, "Load a model", "", filters, "File WRML (*.wrl)", options=options)
-
-        return file_name
+        self.parent.load_source()
 
     @pyqtSlot()
     def save_target(self):

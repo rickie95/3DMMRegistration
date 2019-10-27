@@ -1,10 +1,12 @@
-from graphicInterface.console import Logger
-from scipy.spatial.transform import Rotation
-from pointRegistration import file3D
-import numpy as np
-import h5py
 import ntpath
 import os
+
+import h5py
+import numpy as np
+from scipy.spatial.transform import Rotation
+
+from graphicInterface.console import Logger
+from pointRegistration import file3D
 
 
 class Model:
@@ -17,22 +19,39 @@ class Model:
         :param path_landmarks: path to .bnd file (only for .wrl/.bnd case)
         :param image: path to the associated image (opt)
         """
-
-        self.bgImage = None
-        self.registration_points = None
-        self.registration_params = None
-        self.displacement_map = None
         self.landmarks = None
         self.landmarks_color = None
         self.points = None
         self.points_color = None
-        self.rangeX = None
-        self.rangeY = None
-        self.filename = None
 
+        self.highlighted_color = "y"
+
+        self.init_attributes()
         if path_data is not None:
             self.load_model(path_data)
             self.center_model()
+
+    @classmethod
+    def from_model(cls, model):
+        copy = cls()
+        copy.set_points(np.copy(model.points))
+        if model.points_color is not None:
+            copy.points_color = model.points_color
+        if model.landmarks is not None:
+            copy.set_landmarks(np.copy(model.landmarks))
+            if model.landmarks_color is not None:
+                copy.landmarks_color = model.landmarks_color
+        copy.filename = model.filename
+        return copy
+
+    def init_attributes(self):
+        self.bgImage = None
+        self.registration_points = None
+        self.registration_params = None
+        self.displacement_map = None
+        self.rangeX = None
+        self.rangeY = None
+        self.filename = None
 
     def center_model(self):
         # Not always scans are perfectly centered.
@@ -46,11 +65,11 @@ class Model:
         self.points = data
         self.rangeX = np.ptp(self.points[:, 0])
         self.rangeY = np.ptp(self.points[:, 1])
-        self.points_color = ["b"] * data.shape[0]
+        self.points_color = "b"
 
     def set_landmarks(self, land):
         self.landmarks = land
-        self.landmarks_color = ["r"] * self.landmarks.shape[0]
+        self.landmarks_color = "r"
 
     def add_registration_points(self, reg_points):
         if reg_points[0] == -1:
@@ -70,7 +89,7 @@ class Model:
             return True
         return False
 
-    def save_model(self, filepath):
+    def save_model(self, filename):
         model = {"model_data": self.points}
 
         if self.landmarks is not None:
@@ -81,13 +100,14 @@ class Model:
             for i in range(len(self.registration_params)):
                 model[str("reg_param"+str(i))] = self.registration_params[i]
 
-        file3D.save_file(filepath, model)
-        Logger.addRow(str("File saved: " + filepath))
+        file3D.save_file(filename, model)
+        Logger.addRow(str("File saved: " + filename))
 
     def compute_displacement_map(self, target_model, distance):
         from pointRegistration.displacementMap import DisplacementMap
-        self.displacement_map = DisplacementMap(self, target_model, distance)
-        return self.displacement_map
+        if target_model is None:
+            return None
+        return DisplacementMap.compute_map(source_model=self, target_model=target_model, max_dist=distance)
 
     def rotate(self, axis, theta):
         self.points = Model.rotate_model(axis, theta, self.points)

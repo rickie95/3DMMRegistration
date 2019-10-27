@@ -1,8 +1,9 @@
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from graphicInterface.console import suppress_stdout_stderr
+import numpy as np
 from PyQt5.QtWidgets import QSizePolicy
 from matplotlib import pyplot
-import numpy as np
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+
+from graphicInterface.console import suppress_stdout_stderr
 
 
 class PlotFigure(FigureCanvas):
@@ -22,38 +23,34 @@ class PlotFigure(FigureCanvas):
         self.data_colors = None
         self.scale_width = None
         self.scale_height = None
+        self.legend_handlers = []
+        self.legend_has_been_drawn = True
 
         if model is not None:
             self.load_model(model)
 
     def load_model(self, model):
         self.model = model
-        self.bgImage = self.model.bgImage
-        self.data_colors = np.full(self.model.points.shape[0], "b")
         self.drawDisplacement = False
 
-    def load_data(self, data=None, color=None):
-        if color is None:
-            color = self.model.points_color
-        if data is None:
-            data = self.model.points
+    def load_data(self, data, color, marker='o', points_size=0.5, label=""):
+        if data is None or data.shape[0] == 0:
+            return
+        append = False
+        if label != "":
+            label += f" ({data.shape[0]})"
+            append = True
         max_v = np.max(data[:, 2])
         min_v = np.min(data[:, 2])
         sizes = np.copy(data[:, 2])
         self.sizes = ((sizes + np.abs(min_v)) / np.abs(max_v)) + 0.5
-        self.ax.scatter(data[:, 0], data[:, 1], self.sizes, c=color)
-
-    def load_landmarks(self):
-        if self.draw_landmarks and self.model.landmarks is not None:
-            max_v = np.max(self.model.landmarks[:, 2])
-            min_v = np.min(self.model.landmarks[:, 2])
-            sizes = np.copy(self.model.landmarks[:, 2])
-            sizes = ((sizes + np.abs(min_v)) / np.abs(max_v))*5 + 0.5
-            self.ax.scatter(self.model.landmarks[:, 0], self.model.landmarks[:, 1], sizes,
-                            c=self.model.landmarks_color)
+        legend_handler, = self.ax.plot(data[:, 0], data[:, 1], c=color, marker=marker, linestyle='None',
+                                       markersize=points_size, label=label)
+        if append:
+            self.legend_handlers.append(legend_handler)
 
     def load_displacement(self):
-        self.ax.scatter(self.model.displacement_map[:, 0], self.model.displacement_map[:, 1], s=0.5)
+        self.ax.plot(self.model.displacement_map[:, 0], self.model.displacement_map[:, 1])
 
     def load_image(self):
         if self.bgImage is not None:
@@ -68,67 +65,58 @@ class PlotFigure(FigureCanvas):
     def clear(self):
         self.ax.cla()
 
-    def draw_data(self):
+    def draw_data(self, clear=False):
+        if clear:
+            self.ax.cla()
         if self.title is not None:
             self.ax.set_title(self.title)
         if self.model is not None:
-            self.scale_width = self.model.rangeX / 2
-            self.scale_height = self.model.rangeY / 2
-            self.ax.set_xlim(-self.scale_width * 1.1, self.scale_width * 1.1)  # (-110, 110)
-            self.ax.set_ylim(-self.scale_height * 1.1, self.scale_height * 1.1)  # (-100, 100)
+            self.ax.autoscale()
+            self.ax.set_aspect('equal')
             self.ax.set_xlabel('X axis')
             self.ax.set_ylabel('Y axis')
-            if not self.drawDisplacement:
-                self.load_data()
-            else:
-                self.load_displacement()
 
-            self.load_landmarks()
+            self.load_data(self.model.points, self.model.points_color, label="Points")
+            if self.model.landmarks is not None:
+                self.load_data(self.model.landmarks, self.model.landmarks_color, points_size=5, label="Landmarks")
+            try:
+                self.load_data(self.model.points[self.model.registration_points], 'y', label="Registration Points")
+            except Exception as ex:
+                pass
+
+            try:
+                self.load_data(self.model.missed_points, self.model.missed_points_color, marker='v',
+                               label="Missed Points")
+                self.load_data(self.model.missed_landmarks, self.model.missed_landmarks_color, size=5, marker='v',
+                               label="Missed Landmarks")
+            except Exception as ex:
+                pass
+            """if len(self.legend_handlers) > 0 and self.legend_has_been_drawn:
+                self.ax.legend(handles=self.legend_handlers)
+                self.legend_has_been_drawn = False
+            """
             self.load_image()
-
-        super().draw()
-        self.flush_events()
+        self.draw()
 
     def draw(self, clear=False):
         if clear is True:
             self.clear()
-        self.draw_data()
+        super().draw()
+        self.flush_events()
 
     def restore_model(self):
         self.ax.cla()
         self.draw_data()
-        self.flush_events()
-
-    def select_area(self, x_coord, y_coord, width, height):
-        with suppress_stdout_stderr():
-            x_data = self.model.points[:, 0]
-            y_data = self.model.points[:, 1]
-
-            x_ind = np.where((x_coord <= x_data) & (x_data <= x_coord + width))
-            y_ind = np.where((y_coord <= y_data) & (y_data <= y_coord + height))
-
-            ind = np.intersect1d(np.array(x_ind), np.array(y_ind), assume_unique=True)
-            self.highlight_data(ind)
-
-    def highlight_data(self, indices):
-        if indices[0] != -1:
-            self.data_colors[indices] = "y"
-            self.model.add_registration_points(indices)
-            self.draw_data()
-        else:
-            self.data_colors[list(range(self.model.points.shape[0]))] = "b"
-            self.model.init_registration_points()
-            self.draw_data()
 
     def landmarks(self, l):
         self.draw_landmarks = l
 
     def set_landmarks_colors(self, colors):
-        self.landmarks_colors = colors
+        self.model.landmarks_color = colors
         self.draw_data()
 
     def set_data_colors(self, colors):
-        self.data_colors = colors
+        self.model.points_color = colors
         self.draw_data()
 
     def get_ax(self):
@@ -137,8 +125,8 @@ class PlotFigure(FigureCanvas):
     def update_plot_callback(self, iteration, error, X, Y, ax):
         self.ax.cla()
         print(iteration, error)
-        self.ax.scatter(Y[:, 0], Y[:, 1], self.sizes, c='r')
-        self.ax.scatter(X[:, 0], X[:, 1], 0.5, c='b')
+        self.ax.scatter(Y[:, 0], Y[:, 1], 0.1, c='r')
+        self.ax.scatter(X[:, 0], X[:, 1], 0.1, c='b')
         if self.bgImage is not None:
             img = pyplot.imread(self.bgImage)
             self.ax.imshow(img, extent=[-self.model.rangeY/2 * 1.05, self.model.rangeY/2 * 1.03,

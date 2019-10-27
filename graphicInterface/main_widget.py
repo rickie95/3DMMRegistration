@@ -1,13 +1,11 @@
-from graphicInterface.plot_interactive_figure import PlotInteractiveFigure
-from graphicInterface.show_displacement import DisplacementMapWindow
-from pointRegistration.batchRegistration import BatchRegistrationThread
-from pointRegistration.registration import Registration
-from graphicInterface.rotatable_figure import RotatableFigure
-from graphicInterface.upper_toolbar import *
-from graphicInterface.console import Logger
-from pointRegistration.model import Model
-from PyQt5.QtWidgets import QMessageBox
 import os
+from graphicInterface.plot_interactive_figure import PlotInteractiveFigure
+from graphicInterface.rotatable_figure import RotatableFigure
+from graphicInterface.show_displacement import DisplacementMapWindow
+from graphicInterface.upper_toolbar import *
+from pointRegistration.batchRegistration import BatchRegistrationThread
+from pointRegistration.model import Model
+from pointRegistration.registration import Registration
 
 
 class MainWidget(QWidget):
@@ -30,26 +28,38 @@ class MainWidget(QWidget):
         self.sx_widget = PlotInteractiveFigure(self, self.source_model, title="Source")
         self.dx_widget = RotatableFigure(self, None, title="Target")
         grid_central.addWidget(self.sx_widget, 1, 0, 1, 2)
-        self.sx_widget.draw(clear=True)
+        self.sx_widget.draw_data()
         grid_central.addWidget(self.dx_widget, 1, 2, 1, 2)
-        self.dx_widget.draw(clear=True)
+        self.dx_widget.draw_data()
         self.toolbar = UpperToolbar(self)
         grid_central.addWidget(self.toolbar, 0, 0, 1, 4)
         grid_central.setRowStretch(0, 1)
         grid_central.setRowStretch(1, 30)
 
-    def load_target(self, path):
-        self.target_model = Model(path)
+    def load_target(self):
+        filters = "OFF Files (*.off);;WRML Files (*.wrml);;MAT Files (*.mat)"
+        file_name = load_file_dialog(self, filters)
+        if file_name is None:
+            return
+
+        self.toolbar.start_registration_button.setEnabled(True)
+        self.target_model = Model(file_name)
         self.dx_widget.load_model(self.target_model)
-        self.dx_widget.draw(clear=True)
-        Logger.addRow(str("File loaded correctly: " + path))
+        self.dx_widget.draw_data(clear=True)
+        Logger.addRow(str("File loaded correctly: " + file_name))
         self.toolbar.save_target_btn.setEnabled(True)
 
-    def load_source(self, path):
-        self.source_model = Model(path)
+    def load_source(self):
+        filters = "OFF Files (*.off);;WRML Files (*.wrml);;MAT Files (*.mat)"
+        file_name = load_file_dialog(self, filters)
+        if file_name is None:
+            return
+
+        self.toolbar.start_registration_button.setEnabled(True)
+        self.source_model = Model(file_name)
         self.sx_widget.load_model(self.source_model)
-        self.sx_widget.draw()
-        Logger.addRow(str("File loaded correctly: " + path))
+        self.sx_widget.draw_data()
+        Logger.addRow(str("File loaded correctly: " + file_name))
 
     def restore(self):
         self.restore_highlight()
@@ -79,6 +89,7 @@ class MainWidget(QWidget):
             raise Exception("Target model is not present.")
 
         if self.registration_thread is None:
+            self.toolbar.show_displacement_btn.setEnabled(False)
             self.parent().setStatus("Busy...")
             self.registration_thread = Registration(method, self.sx_widget.model, self.target_model, percentage,
                                                     self.registration_completed_callback,
@@ -91,13 +102,8 @@ class MainWidget(QWidget):
             self.registration_thread.stop()
 
     def show_displacement_map(self):
-        DisplacementMapWindow(self.parent(), self.source_model.compute_displacement_map(self.target_model, 3))
-
-    def save_displacement_map(self):
-        filters = "Serialized Python Obj (*.pickle)"
-        filename = self.save_dialog(filters)
-        if filename is not None:
-            self.target_model.save_displacement_map(filename)
+        DisplacementMapWindow(self.parent(), self.source_model.compute_displacement_map(self.target_model, 3))  # FIXME
+        self.parent().setStatusReady()
 
     def save_target(self):
         if self.target_model is None:
@@ -105,39 +111,27 @@ class MainWidget(QWidget):
             return
 
         filters = "MAT File (*.mat);;OFF File (*.off);;"
-        filename = self.save_dialog(filters)
-        if filename is not None:
-            self.dx_widget.model.save_model(filename)
-
-    def save_dialog(self, filters):
-        dlg = QFileDialog()
-        options = dlg.Options()
-        options |= dlg.DontUseNativeDialog
-        filename, ext = dlg.getSaveFileName(self, None, "Save model", filter=filters, options=options)
-
-        if filename:
-            if ext.find(".off") >= 0 > filename.find(".off"):
-                filename += ".off"
-            if ext.find(".mat") >= 0 > filename.find(".mat"):
-                filename += ".mat"
-            if ext.find(".pickle") >= 0 > filename.find(".pickle"):
-                filename += ".pickle"
-            return filename
-        return None
+        filename = save_file_dialog(self, filters)
+        if filename is None:
+            return
+        self.target_model.save_model(filename) #fixme controlla
 
     def registration_completed_callback(self, model):
         Logger.addRow(str("Registration completed."))
-        self.target_model = model
         self.target_model.bgImage = self.dx_widget.bgImage
         self.dx_widget.clear()
+
+        self.dx_widget.set_secondary_model(model)
         self.dx_widget.load_model(self.target_model)
-        self.dx_widget.load_data(self.source_model.points, 'r')
-        self.dx_widget.draw()
+        self.target_model = model
+
+        self.dx_widget.draw_data()
         self.parent().setStatusReady()
         self.registration_thread = None
         self.toolbar.stop_registration_button.setEnabled(False)
         self.toolbar.show_displacement_btn.setEnabled(True)
         self.registrated = True
+        self.parent().setStatus("Registration completed, displacement map available. Click Show Displacement Map.")
         # Target and Source are now plotted in target widget
 
     def registrate_batch_callback(self):
