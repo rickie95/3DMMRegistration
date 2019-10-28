@@ -73,15 +73,12 @@ class Registration(Thread):
             and displacement map oomputed between transformed source and target.
         """
         model.registration_params = self.registration_method.get_registration_parameters()
-        if self.target_model.points is not None:
-            points = self.registration_method.transform_point_cloud(self.source_model.points)
+        points = self.registration_method.transform_point_cloud(self.source_model.points)
+        if self.source_model.landmarks is not None:
             landmarks = self.registration_method.transform_point_cloud(self.source_model.landmarks)
-        else:
-            points = self.registration_method.transform_point_cloud(self.source_model.points)
-            landmarks = None
+            model.set_landmarks(landmarks)
 
         model.set_points(points)
-        model.set_landmarks(landmarks)
         model.filename = self.target_model.filename
 
         # model.compute_displacement_map(self.target_model, 3)

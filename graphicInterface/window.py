@@ -2,6 +2,7 @@ from graphicInterface.main_widget import *
 from graphicInterface.console import Logger
 from pointRegistration.registration_param import RegistrationParameters
 from PyQt5.QtGui import QIcon
+from graphicInterface.conf_param_window import EditConfWindow
 
 
 class Window(QMainWindow):
@@ -21,7 +22,7 @@ class Window(QMainWindow):
         statusBar = QStatusBar()
         self.setStatusBar(statusBar)
         statusBar.addWidget(self.statusLabel)
-        statusBar.addPermanentWidget(QLabel(RegistrationParameters().to_string()))
+        statusBar.addPermanentWidget(ConfigLabel())
         self.setWindowTitle('Shape Registrator')
         self.setStatus("Ready.")
         self.show()
@@ -37,3 +38,14 @@ class Window(QMainWindow):
 
     def setStatusReady(self):
         self.setStatus("Ready")
+
+
+class ConfigLabel(QLabel):
+
+    def __init__(self):
+        self.string = "<b>(Click to edit) </b>  |" + RegistrationParameters().to_string()
+        super(ConfigLabel, self).__init__(self.string)
+
+    def mouseDoubleClickEvent(self, *args, **kwargs):
+        window = EditConfWindow(self)
+        window.show()

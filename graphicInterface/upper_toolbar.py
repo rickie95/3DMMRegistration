@@ -4,7 +4,6 @@ from graphicInterface.console import Logger
 from graphicInterface.upper_toolbar_controls import *
 
 
-
 class UpperToolbar(QWidget):
 
     def __init__(self, parent):

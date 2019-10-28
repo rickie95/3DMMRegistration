@@ -91,7 +91,7 @@ class MainWidget(QWidget):
         if self.registration_thread is None:
             self.toolbar.show_displacement_btn.setEnabled(False)
             self.parent().setStatus("Busy...")
-            self.registration_thread = Registration(method, self.sx_widget.model, self.target_model, percentage,
+            self.registration_thread = Registration(method, self.source_model, self.target_model, percentage,
                                                     self.registration_completed_callback,
                                                     self.dx_widget.update_plot_callback)
             self.registration_thread.start()
@@ -114,7 +114,7 @@ class MainWidget(QWidget):
         filename = save_file_dialog(self, filters)
         if filename is None:
             return
-        self.target_model.save_model(filename) #fixme controlla
+        self.target_model.save_model(filename) #fixme controllare che venga realmente salvato
 
     def registration_completed_callback(self, model):
         Logger.addRow(str("Registration completed."))
