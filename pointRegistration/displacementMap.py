@@ -97,7 +97,6 @@ class DisplacementMap(Model):
     def save_h5py(self, filename):
         def encode_ss_utf_8(ss):
             return np.void(ss.encode('utf-8'))
-        print("ok")
         # self = self.source_model.compute_displacement_map(self.target_model, 3)
         file = None
         try:
@@ -116,6 +115,7 @@ class DisplacementMap(Model):
         finally:
             if file is not None:
                 file.close()
+                Logger.addRow(f'File {filename} saved correctly.')
 
     @classmethod
     def load_model(cls, filename):
@@ -152,6 +152,8 @@ class DisplacementMap(Model):
                                      landmarks_color=landmarks_color,
                                      missed_points_color=missed_points_color,
                                      missed_landmarks_color=missed_landmarks_color)
+
+        Logger.addRow(f'File {filename} load correctly.')
         return displacement_model
 
     def shoot_displacement_map(self, filepath):

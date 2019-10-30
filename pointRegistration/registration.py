@@ -29,7 +29,7 @@ class Registration(Thread):
             target = np.concatenate((target, self.target_model.landmarks), axis=0)
         Logger.addRow("Landmarks added.")
 
-        ps = RegistrationParameters().getParams()
+        ps = RegistrationParameters().get_params()
 
         if self.method == 1:  # CPD - RIGID
             self.registration_method = rigid_registration(**{'X': target, 'Y': source, 'sigma2': ps['sigma2'],

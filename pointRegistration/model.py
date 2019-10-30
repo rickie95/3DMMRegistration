@@ -135,8 +135,11 @@ class Model:
 
         if self.file_extension == ".mat":
             file = h5py.File(path_data, 'r')
-            self.set_points(np.transpose(np.array(file["avgModel"])))
-            self.set_landmarks(np.transpose(np.array(file["landmarks3D"])))
+            try:
+                self.set_points(np.transpose(np.array(file["avgModel"])))
+                self.set_landmarks(np.transpose(np.array(file["landmarks3D"])))
+            except Exception as ex:
+                print("File is not compatible:" + ex)
 
         if self.file_extension == ".wrl":
             self.set_points(file3D.load_wrml(path_data))

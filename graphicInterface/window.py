@@ -43,7 +43,7 @@ class Window(QMainWindow):
 class ConfigLabel(QLabel):
 
     def __init__(self):
-        self.string = "<b>(Click to edit) </b>  |" + RegistrationParameters().to_string()
+        self.string = "<b>(Double click to edit) </b>  |" + RegistrationParameters().to_string()
         super(ConfigLabel, self).__init__(self.string)
 
     def mouseDoubleClickEvent(self, *args, **kwargs):
