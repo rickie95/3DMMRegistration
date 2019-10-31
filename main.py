@@ -6,5 +6,9 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
 
+    Logger()
+    RegistrationParameters()
+
     w = Window()
+
     sys.exit(app.exec_())

@@ -58,6 +58,7 @@ class ConfEditCentralWidget(QWidget):
             else:
                 print(f"Parameter for {value_input.key} is invalid, using previous value.")
         RegistrationParameters.write_on_file()
+        self.parent().parent().update_parameter_label()
 
 
 class ValidatedLineEdit(QLineEdit):

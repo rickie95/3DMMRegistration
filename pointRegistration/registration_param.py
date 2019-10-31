@@ -64,8 +64,9 @@ class RegistrationParameters:
     def write_on_file():
         RegistrationParameters.instance.write_on_file()
 
-    def to_string(self):
-        param = self.get_params()
+    @staticmethod
+    def to_string():
+        param = RegistrationParameters.instance.get_params()
         ss = ""
         for k in param:
             ss += k + " : " + str(param[k]) + " | "
