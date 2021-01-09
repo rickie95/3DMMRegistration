@@ -1,3 +1,5 @@
+<p align="center">3DMMRegistration was helpful to you? Feel free to contribute or <a href="https://www.buymeacoffee.com/rickie95" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="35" style="max-width:100%;vertical-align: middle;"></a></p>
+
 # Shape Registrator
 
 *A tool for 3D face models aligment. With a GUI.*
